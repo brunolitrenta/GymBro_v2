@@ -42,6 +42,9 @@ const DynamicWorkout = () => {
         }}
       >
         <Pressable className="w-full h-28 bg-lightgreen rounded-2xl items-center justify-center p-2 mb-5 flex-row justify-around">
+          <Text className="font-rsemi text-xl w-[58%] text-center">
+            {item.exercicio}
+          </Text>
           <Pressable
             className="w-12 h-12 items-center justify-center"
             onPress={() => {
@@ -58,9 +61,6 @@ const DynamicWorkout = () => {
               <FontAwesome5 name="square" size={32} color="black" />
             )}
           </Pressable>
-          <Text className="font-rsemi text-xl w-[58%] text-center">
-            {item.exercicio}
-          </Text>
         </Pressable>
       </Link>
     );
@@ -91,7 +91,7 @@ const DynamicWorkout = () => {
           </TouchableOpacity>
         </Link>
       </View>
-      <View className="w-full h-5/6">
+      <View className="w-full h-5/6 mt-5">
         <Text className="text-darkgreen font-rbold ml-2 text-base ml-5">
           Lista de exercícios
         </Text>
@@ -108,8 +108,8 @@ const DynamicWorkout = () => {
         activeOpacity={0.7}
         className={
           exercisesCompleted.length == 0
-            ? "flex-row w-11/12 h-16 absolute top-[94.5%] bg-stronggreen justify-evenly items-center rounded-2xl opacity-60"
-            : "flex-row w-11/12 h-16 absolute top-[94.5%] bg-stronggreen justify-evenly items-center rounded-2xl"
+            ? "flex-row w-11/12 h-16 fixed bottom-6 bg-stronggreen justify-evenly items-center rounded-2xl opacity-60"
+            : "flex-row w-11/12 h-16 fixed bottom-6 bg-stronggreen justify-evenly items-center rounded-2xl"
         }
       >
         <Text className="font-rbold text-2xl">Finalizar treino</Text>

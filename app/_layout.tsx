@@ -23,16 +23,23 @@ const RootLayout = () => {
 
   if (!fontsLoaded && !error) return null;
 
+  const normalOptions = {
+    headerShown: false,
+    statusBarTranslucent: true,
+    navigationBarHidden: true,
+  }
+
   return (
     <WorkoutContextProvider>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
-        <Stack.Screen name="workout/[label]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
-        <Stack.Screen name="exercise/[id]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+        <Stack.Screen name="(tabs)" options={normalOptions} />
+        <Stack.Screen name="workout/[label]" options={normalOptions} />
+        <Stack.Screen name="exercise/[id]" options={normalOptions} />
         <Stack.Screen name="modals/creditsModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
         <Stack.Screen name="modals/addWorkoutModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
         <Stack.Screen name="modals/workoutOptionsModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
-        <Stack.Screen name="calendar" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+        <Stack.Screen name="modals/editExercisePropsModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
+        <Stack.Screen name="calendar" options={normalOptions} />
       </Stack>
     </WorkoutContextProvider>
   );

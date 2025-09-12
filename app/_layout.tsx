@@ -2,6 +2,7 @@ import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { WorkoutContextProvider } from "@/hooks/workoutContext";
+import { AuthContextProvider } from "@/hooks/authContext";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
@@ -24,17 +25,20 @@ const RootLayout = () => {
   if (!fontsLoaded && !error) return null;
 
   return (
-    <WorkoutContextProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
-        <Stack.Screen name="workout/[label]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
-        <Stack.Screen name="exercise/[id]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
-        <Stack.Screen name="modals/creditsModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
-        <Stack.Screen name="modals/addWorkoutModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
-        <Stack.Screen name="modals/workoutOptionsModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
-        <Stack.Screen name="calendar" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
-      </Stack>
-    </WorkoutContextProvider>
+    <AuthContextProvider>
+      <WorkoutContextProvider>
+        <Stack>
+          <Stack.Screen name="login" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+          <Stack.Screen name="workout/[label]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+          <Stack.Screen name="exercise/[id]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+          <Stack.Screen name="modals/creditsModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
+          <Stack.Screen name="modals/addWorkoutModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
+          <Stack.Screen name="modals/workoutOptionsModal" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true, presentation: "transparentModal", animation: "fade" }} />
+          <Stack.Screen name="calendar" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+        </Stack>
+      </WorkoutContextProvider>
+    </AuthContextProvider>
   );
 };
 

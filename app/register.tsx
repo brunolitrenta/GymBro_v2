@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     View,
     Text,
@@ -16,17 +19,46 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useAuth } from "@/hooks/authContext";
+import api from "@/utils/axiosConfig";
+
+const registerSchema = z.object({
+    name: z.string().min(2, "Nome obrigatório"),
+    gender: z.enum(["homem", "mulher", "outro"], { message: "Selecione o gênero" }),
+    birthDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Data inválida"),
+    weight: z.string().regex(/^\d{2,3}$/, {message: "Peso inválido"}).refine(val => Number(val) > 0, {message: "Peso inválido"}),
+    height: z.string().regex(/^\d{2,3}$/, {message: "Altura inválida"}).refine(val => Number(val) > 0, {message:"Altura inválida"}),
+    goal: z.string().max(200, "Máximo 200 caracteres"),
+    medical: z.string().max(200, "Máximo 200 caracteres"),
+    email: z.string().email("E-mail inválido"),
+    password: z.string().min(6, "Mínimo 6 caracteres"),
+    confirmPassword: z.string().min(6, "Confirme a senha"),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+});
+
+type RegisterForm = z.infer<typeof registerSchema>;
 
 const Register = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [screenHeight, setScreenHeight] = useState(Dimensions.get("window").height);
-    //const { register } = useAuth();
+    const { control, handleSubmit, setValue, watch, formState: { errors } } = useForm<RegisterForm>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: {
+            name: "",
+            gender: undefined,
+            birthDate: "",
+            weight: "",
+            height: "",
+            goal: "",
+            medical: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+        },
+    });
 
     React.useEffect(() => {
         const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () => {
@@ -45,22 +77,22 @@ const Register = () => {
         };
     }, []);
 
-    // const handleRegister = async () => {
-    //     if (!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-    //         Alert.alert("Erro", "Por favor, preencha todos os campos");
-    //         return;
-    //     }
-    //     if (password !== confirmPassword) {
-    //         Alert.alert("Erro", "As senhas não coincidem");
-    //         return;
-    //     }
-    //     try {
-    //         await Register(name.trim(), email.trim(), password.trim());
-    //         router.replace("/(tabs)");
-    //     } catch (error) {
-    //         Alert.alert("Erro", error instanceof Error ? error.message : "Ocorreu um erro inesperado");
-    //     }
-    // };
+    const onSubmit = (data: RegisterForm) => {
+        console.log({
+            "nome: ": data.name, 
+            "email: ": data.email, 
+            "senha: ": data.password,
+            "birthdate": data.birthDate,
+            "gender": data.gender,
+            "goal": data.goal,
+            "height": data.height,
+            "weight": data.weight,
+            "medical": data.medical
+        })
+        window.alert("oii")
+        router.push("/login")
+        //api.post
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-primary">
@@ -91,105 +123,271 @@ const Register = () => {
                                 <Text className="text-lg font-rregular text-gray-600 text-center mt-2">Seu parceiro de treino</Text>
                             </View>
                         )}
-                        <View className="w-full" style={{ marginTop: keyboardVisible ? 20 : 0 }}>
-                            <Text className="text-2xl font-rsemi text-textcolor mb-6">Crie sua conta</Text>
-                            <Text className="text-base font-rregular text-gray-600 mb-2">Nome</Text>
-                            <TextInput
-                                className="w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 mb-4"
-                                placeholder="Seu nome"
-                                placeholderTextColor="#9CA3AF"
-                                value={name}
-                                onChangeText={setName}
-                                autoCapitalize="words"
-                                returnKeyType="next"
-                                submitBehavior="blurAndSubmit"
-                            />
-                            <Text className="text-base font-rregular text-gray-600 mb-2">E-mail</Text>
-                            <TextInput
-                                className="w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 mb-4"
-                                placeholder="Seu e-mail"
-                                placeholderTextColor="#9CA3AF"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                                autoComplete="email"
-                                returnKeyType="next"
-                                submitBehavior="blurAndSubmit"
-                            />
-                            <Text className="text-base font-rregular text-gray-600 mb-2">Senha</Text>
-                            <View className="relative mb-4">
-                                <TextInput
-                                    className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200"
-                                    placeholder="Sua senha"
-                                    placeholderTextColor="#9CA3AF"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry={!showPassword}
-                                    autoCapitalize="none"
-                                    autoComplete="password"
-                                    returnKeyType="next"
-                                />
-                                <TouchableOpacity
-                                    className="absolute right-4 top-0 h-14 justify-center items-center"
-                                    onPress={() => setShowPassword(!showPassword)}
-                                    activeOpacity={0.7}
-                                    style={{ width: 40, height: 56 }}
-                                >
-                                    <MaterialCommunityIcons
-                                        name={showPassword ? "eye-off" : "eye"}
-                                        size={24}
-                                        color="#9CA3AF"
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                            <Text className="text-base font-rregular text-gray-600 mb-2">Confirmar senha</Text>
-                            <View className="relative mb-6">
-                                <TextInput
-                                    className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200"
-                                    placeholder="Confirme sua senha"
-                                    placeholderTextColor="#9CA3AF"
-                                    value={confirmPassword}
-                                    onChangeText={setConfirmPassword}
-                                    secureTextEntry={!showConfirmPassword}
-                                    autoCapitalize="none"
-                                    autoComplete="password"
-                                    returnKeyType="done"
-                                    //onSubmitEditing={handleRegister}
-                                />
-                                <TouchableOpacity
-                                    className="absolute right-4 top-0 h-14 justify-center items-center"
-                                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    activeOpacity={0.7}
-                                    style={{ width: 40, height: 56 }}
-                                >
-                                    <MaterialCommunityIcons
-                                        name={showConfirmPassword ? "eye-off" : "eye"}
-                                        size={24}
-                                        color="#9CA3AF"
-                                    />
-                                </TouchableOpacity>
-                            </View>
-                            <Pressable
-                                disabled={!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()}
-                                className={`w-full h-14 mb-6 ${
-                                    !name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()
-                                        ? "bg-grayish"
-                                        : "bg-secondary"
-                                } rounded-2xl justify-center items-center ${
-                                    !name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim() ? "opacity-50" : ""
-                                }`}
-                                //onPress={handleRegister}
-                            >
-                                <Text className="text-white text-lg font-rsemi">Registrar</Text>
-                            </Pressable>
-                            <View className="flex flex-row justify-start">
-                                <Text className="text-base font-rregular text-gray-600 mr-2">Já possui conta?</Text>
-                                <Pressable onPress={() => router.push("/login")}> 
-                                    <Text className="text-base font-rsemi text-lightgreen">Entrar</Text>
-                                </Pressable>
-                            </View>
-                        </View>
+                                                <View className="w-full" style={{ marginTop: keyboardVisible ? 20 : 0 }}>
+                                                        <Text className="text-2xl font-rsemi text-textcolor mb-6">Crie sua conta</Text>
+                                                        {/* Nome */}
+                                                        <Text className={`text-base font-rregular text-gray-600`}>Nome</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="name"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <TextInput
+                                                                    className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 ${errors.name ? "mb-2" : "mb-4"}`}
+                                                                    placeholder="Seu nome"
+                                                                    placeholderTextColor="#9CA3AF"
+                                                                    value={value}
+                                                                    onChangeText={onChange}
+                                                                    autoCapitalize="words"
+                                                                    returnKeyType="next"
+                                                                />
+                                                            )}
+                                                        />
+                                                        {errors.name && <Text className="text-red-500 mb-4">{errors.name.message}</Text>}
+
+                                                        {/* Gênero */}
+                                                        <Text className={`text-base font-rregular text-gray-600`}>Gênero</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="gender"
+                                                            render={({ field: { value, onChange } }) => (
+                                                                <View className={`flex flex-row ${errors.gender ? "mb-2" : "mb-4"}`}>
+                                                                    <Pressable
+                                                                        className={`flex-1 h-12 rounded-2xl border ${value === "homem" ? "bg-lightgreen border-lightgreen" : "bg-white border-gray-200"} justify-center items-center mr-2`}
+                                                                        onPress={() => onChange("homem")}
+                                                                    >
+                                                                        <Text className={`text-lg font-rregular ${value === "homem" ? "text-black" : "text-gray-600"}`}>Homem</Text>
+                                                                    </Pressable>
+                                                                    <Pressable
+                                                                        className={`flex-1 h-12 rounded-2xl border ${value === "mulher" ? "bg-lightgreen border-lightgreen" : "bg-white border-gray-200"} justify-center items-center mx-2`}
+                                                                        onPress={() => onChange("mulher")}
+                                                                    >
+                                                                        <Text className={`text-lg font-rregular ${value === "mulher" ? "text-black" : "text-gray-600"}`}>Mulher</Text>
+                                                                    </Pressable>
+                                                                    <Pressable
+                                                                        className={`flex-1 h-12 rounded-2xl border ${value === "outro" ? "bg-lightgreen border-lightgreen" : "bg-white border-gray-200"} justify-center items-center ml-2`}
+                                                                        onPress={() => onChange("outro")}
+                                                                    >
+                                                                        <Text className={`text-lg font-rregular ${value === "outro" ? "text-black" : "text-gray-600"}`}>Outro</Text>
+                                                                    </Pressable>
+                                                                </View>
+                                                            )}
+                                                        />
+                                                        {errors.gender && <Text className="text-red-500 mb-4">{errors.gender.message}</Text>}
+
+                                                        {/* Data de nascimento */}
+                                                        <Text className="text-base font-rregular text-gray-600 mb-2">Data de nascimento</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="birthDate"
+                                                            render={({ field: { onChange, value } }) => {
+                                                                // Função para aplicar máscara de data
+                                                                const handleDateChange = (text: string) => {
+                                                                    // Remove tudo que não é número
+                                                                    let cleaned = text.replace(/\D/g, "");
+                                                                    // Aplica a máscara DD/MM/AAAA
+                                                                    if (cleaned.length > 2 && cleaned.length <= 4) {
+                                                                        cleaned = cleaned.slice(0,2) + "/" + cleaned.slice(2);
+                                                                    } else if (cleaned.length > 4) {
+                                                                        cleaned = cleaned.slice(0,2) + "/" + cleaned.slice(2,4) + "/" + cleaned.slice(4,8);
+                                                                    }
+                                                                    onChange(cleaned);
+                                                                };
+                                                                return (
+                                                                    <TextInput
+                                                                        className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 ${errors.birthDate ? "mb-2" : "mb-4"}`}
+                                                                        placeholder="DD/MM/AAAA"
+                                                                        placeholderTextColor="#9CA3AF"
+                                                                        value={value}
+                                                                        onChangeText={handleDateChange}
+                                                                        keyboardType="numeric"
+                                                                        maxLength={10}
+                                                                    />
+                                                                );
+                                                            }}
+                                                        />
+                                                        {errors.birthDate && <Text className="text-red-500 mb-4">{errors.birthDate.message}</Text>}
+
+                                                        {/* Peso */}
+                                                        <Text className="text-base font-rregular text-gray-600 mb-2">Peso (kg)</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="weight"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <TextInput
+                                                                    className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 ${errors.weight ? "mb-2" : "mb-4"}`}
+                                                                    placeholder="Seu peso em kg"
+                                                                    placeholderTextColor="#9CA3AF"
+                                                                    value={value}
+                                                                    onChangeText={onChange}
+                                                                    keyboardType="numeric"
+                                                                    maxLength={3}
+                                                                />
+                                                            )}
+                                                        />
+                                                        {errors.weight && <Text className="text-red-500 mb-4">{errors.weight.message}</Text>}
+
+                                                        {/* Altura */}
+                                                        <Text className="text-base font-rregular text-gray-600 mb-2">Altura (cm)</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="height"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <TextInput
+                                                                    className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 ${errors.height ? "mb-2" : "mb-4"}`}
+                                                                    placeholder="Sua altura em cm"
+                                                                    placeholderTextColor="#9CA3AF"
+                                                                    value={value}
+                                                                    onChangeText={onChange}
+                                                                    keyboardType="numeric"
+                                                                    maxLength={3}
+                                                                />
+                                                            )}
+                                                        />
+                                                        {errors.height && <Text className="text-red-500 mb-4">{errors.height.message}</Text>}
+
+                                                        {/* Objetivo */}
+                                                        <Text className="text-base font-rregular text-gray-600 mb-2">Objetivo</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="goal"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <TextInput
+                                                                    className={`w-full min-h-14 max-h-32 bg-white rounded-2xl px-4 py-2 text-lg font-rregular border border-gray-200 ${errors.goal ? "mb-2" : "mb-4"}`}
+                                                                    placeholder="Explique seus objetivos na academia (até 200 caracteres)"
+                                                                    placeholderTextColor="#9CA3AF"
+                                                                    value={value}
+                                                                    onChangeText={onChange}
+                                                                    multiline
+                                                                    maxLength={200}
+                                                                />
+                                                            )}
+                                                        />
+                                                        {errors.goal && <Text className="text-red-500 mb-4">{errors.goal.message}</Text>}
+
+                                                        {/* Complicações médicas */}
+                                                        <Text className="text-base font-rregular text-gray-600 mb-2">Complicações médicas</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="medical"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <TextInput
+                                                                    className={`w-full min-h-14 max-h-32 bg-white rounded-2xl px-4 py-2 text-lg font-rregular border border-gray-200 ${errors.medical ? "mb-2" : "mb-4"}`}
+                                                                    placeholder="Explique complicações médicas que você tem (até 200 caracteres)"
+                                                                    placeholderTextColor="#9CA3AF"
+                                                                    value={value}
+                                                                    onChangeText={onChange}
+                                                                    multiline
+                                                                    maxLength={200}
+                                                                />
+                                                            )}
+                                                        />
+                                                        {errors.medical && <Text className="text-red-500 mb-4">{errors.medical.message}</Text>}
+
+                                                        {/* E-mail */}
+                                                        <Text className="text-base font-rregular text-gray-600 mb-2">E-mail</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="email"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <TextInput
+                                                                    className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 ${errors.email ? "mb-2" : "mb-4"}`} 
+                                                                    placeholder="Seu e-mail"
+                                                                    placeholderTextColor="#9CA3AF"
+                                                                    value={value}
+                                                                    onChangeText={onChange}
+                                                                    autoCapitalize="none"
+                                                                    keyboardType="email-address"
+                                                                    autoComplete="email"
+                                                                    returnKeyType="next"
+                                                                />
+                                                            )}
+                                                        />
+                                                        {errors.email && <Text className="text-red-500 mb-4">{errors.email.message}</Text>}
+
+                                                        {/* Senha */}
+                                                        <Text className={`text-base font-rregular text-gray-600 ${errors.confirmPassword ? "mb-2" : "mb-6"}`}>Senha</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="password"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <View className="relative mb-4">
+                                                                    <TextInput
+                                                                        className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200"
+                                                                        placeholder="Sua senha"
+                                                                        placeholderTextColor="#9CA3AF"
+                                                                        value={value}
+                                                                        onChangeText={onChange}
+                                                                        secureTextEntry={!showPassword}
+                                                                        autoCapitalize="none"
+                                                                        autoComplete="password"
+                                                                        returnKeyType="next"
+                                                                    />
+                                                                    <TouchableOpacity
+                                                                        className="absolute right-4 top-0 h-14 justify-center items-center"
+                                                                        onPress={() => setShowPassword(!showPassword)}
+                                                                        activeOpacity={0.7}
+                                                                        style={{ width: 40, height: 56 }}
+                                                                    >
+                                                                        <MaterialCommunityIcons
+                                                                            name={showPassword ? "eye-off" : "eye"}
+                                                                            size={24}
+                                                                            color="#9CA3AF"
+                                                                        />
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            )}
+                                                        />
+                                                        {errors.password && <Text className="text-red-500 mb-4">{errors.password.message}</Text>}
+
+                                                        {/* Confirmar senha */}
+                                                        <Text className="text-base font-rregular text-gray-600 mb-2">Confirmar senha</Text>
+                                                        <Controller
+                                                            control={control}
+                                                            name="confirmPassword"
+                                                            render={({ field: { onChange, value } }) => (
+                                                                <View className={`relative ${errors.confirmPassword ? "mb-2" : "mb-6"}`}>
+                                                                    <TextInput
+                                                                        className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200"
+                                                                        placeholder="Confirme sua senha"
+                                                                        placeholderTextColor="#9CA3AF"
+                                                                        value={value}
+                                                                        onChangeText={onChange}
+                                                                        secureTextEntry={!showConfirmPassword}
+                                                                        autoCapitalize="none"
+                                                                        autoComplete="password"
+                                                                        returnKeyType="done"
+                                                                    />
+                                                                    <TouchableOpacity
+                                                                        className="absolute right-4 top-0 h-14 justify-center items-center"
+                                                                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                                        activeOpacity={0.7}
+                                                                        style={{ width: 40, height: 56 }}
+                                                                    >
+                                                                        <MaterialCommunityIcons
+                                                                            name={showConfirmPassword ? "eye-off" : "eye"}
+                                                                            size={24}
+                                                                            color="#9CA3AF"
+                                                                        />
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            )}
+                                                        />
+                                                        {errors.confirmPassword && <Text className="text-red-500 mb-6">{errors.confirmPassword.message}</Text>}
+
+                                                        <Pressable
+                                                            className={`w-full h-14 mb-6 ${Object.keys(errors).length ? "bg-grayish opacity-50" : "bg-secondary"} rounded-2xl justify-center items-center`}
+                                                            onPress={handleSubmit(onSubmit)}
+                                                        >
+                                                            <Text className="text-white text-lg font-rsemi">Registrar</Text>
+                                                        </Pressable>
+
+                                                        <View className="flex flex-row justify-start">
+                                                            <Text className="text-base font-rregular text-gray-600 mr-2">Já possui conta?</Text>
+                                                            <Pressable onPress={() => router.push("/login")}> 
+                                                                <Text className="text-base font-rsemi text-lightgreen">Entrar</Text>
+                                                            </Pressable>
+                                                        </View>
+                                                </View>
                         <View style={{ height: keyboardVisible ? 100 : 50 }} />
                     </View>
                 </ScrollView>

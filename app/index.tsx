@@ -8,7 +8,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      if (!isLoggedIn) {
+      if (isLoggedIn) {
         router.replace('/(tabs)');
       } else {
         router.replace('/login');

@@ -17,40 +17,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useAuth } from "@/hooks/authContext";
+import { registerSchema } from "@/types/user";
 import api from "@/utils/axiosConfig";
-
-const registerSchema = z
-  .object({
-    name: z.string().min(2, "Nome obrigatório"),
-    gender: z.enum(["M", "F", "O"], {
-      message: "Selecione o gênero",
-    }),
-    birthDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Data inválida"),
-    weight: z.union([
-      z.number().min(1, { message: "Peso deve ser maior que 0" }),
-      z.string().refine((val) => {
-        const num = parseFloat(val);
-        return !isNaN(num) && num > 0;
-      }, { message: "Peso deve ser maior que 0" })
-    ]),
-    height: z.union([
-      z.number().min(1, { message: "Altura deve ser maior que 0" }),
-      z.string().refine((val) => {
-        const num = parseFloat(val);
-        return !isNaN(num) && num > 0;
-      }, { message: "Altura deve ser maior que 0" })
-    ]),
-    goal: z.string().max(200, "Máximo 200 caracteres"),
-    medical: z.string().max(200, "Máximo 200 caracteres"),
-    email: z.email("E-mail inválido"),
-    password: z.string().min(6, "Mínimo 6 caracteres"),
-    confirmPassword: z.string().min(6, "Confirme a senha"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas não coincidem",
-    path: ["confirmPassword"],
-  });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -61,19 +29,22 @@ const Register = () => {
   const [screenHeight, setScreenHeight] = useState(
     Dimensions.get("window").height
   );
+  const scrollViewRef = React.useRef<ScrollView>(null);
+  const inputRefs = React.useRef<{ [key: string]: TextInput | null }>({});
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       gender: undefined,
       birthDate: "",
       weight: undefined,
       height: undefined,
-      goal: "",
+      goal: undefined,
       medical: "",
       email: "",
       password: "",
@@ -104,18 +75,29 @@ const Register = () => {
     };
   }, []);
 
-  const onSubmit = (data: RegisterForm) => {
-    console.log({
-      "nome: ": data.name,
-      "email: ": data.email,
-      "senha: ": data.password,
-      birthdate: data.birthDate,
-      gender: data.gender,
-      goal: data.goal,
-      height: data.height,
-      weight: data.weight,
-      medical: data.medical,
+  const focusInput = (inputKey: string) => {
+    setTimeout(() => {
+      inputRefs.current[inputKey]?.focus();
+    }, 100);
+  };
+
+  const onSubmit = async (data: RegisterForm) => {
+
+    const res = await api.post("/users", {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      birthdate: data.birthDate || null,
+      gender: data.gender || null,
+      goal: data.goal || null,
+      height: data.height || null,
+      weight: data.weight || null,
+      medical: data.medical || null,
+      type: "user",
     });
+
+    console.log(res)
+    console.log(res.data);
     router.push("/login");
     //api.post
   };
@@ -123,20 +105,24 @@ const Register = () => {
   return (
     <SafeAreaView className="flex-1 bg-primary">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
         style={{ flex: 1 }}
       >
         <ScrollView
+          ref={scrollViewRef}
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: "flex-start",
-            paddingTop: keyboardVisible ? 20 : 40,
-            paddingBottom: keyboardVisible ? 20 : 40,
+            paddingTop: keyboardVisible ? 10 : 40,
+            paddingBottom: keyboardVisible ? 300 : 80,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
+          keyboardDismissMode="interactive"
+          scrollEventThrottle={16}
+          nestedScrollEnabled
         >
           <View className="items-center px-6">
             {(!keyboardVisible || screenHeight > 700) && (
@@ -164,28 +150,172 @@ const Register = () => {
                 Crie sua conta
               </Text>
               <Text className={`text-base font-rregular text-gray-600`}>
-                Nome
+                Nome *
               </Text>
               <Controller
                 control={control}
                 name="name"
                 render={({ field: { onChange, value } }) => (
                   <TextInput
-                    className={`w-full h-12 bg-white rounded-2xl px-4 text-base font-rregular border border-gray-200 ${
+                    ref={(ref) => (inputRefs.current["name"] = ref)}
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
                       errors.name ? "mb-2" : "mb-3"
                     }`}
+                    style={{ textAlignVertical: "center" }}
                     placeholder="Seu nome"
                     placeholderTextColor="#9CA3AF"
                     value={value}
                     onChangeText={onChange}
                     autoCapitalize="words"
                     returnKeyType="next"
+                    scrollEnabled={false}
+                    multiline={false}
+                    numberOfLines={1}
+                    onSubmitEditing={() => focusInput("birthDate")}
                   />
                 )}
               />
               {errors.name && (
                 <Text className="text-red-500 mb-3">{errors.name.message}</Text>
               )}
+
+              <Text className="text-sm font-rregular text-gray-600 mb-1">
+                E-mail *
+              </Text>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    ref={(ref) => (inputRefs.current["email"] = ref)}
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                      errors.email ? "mb-2" : "mb-3"
+                    }`}
+                    style={{ textAlignVertical: "center" }}
+                    placeholder="Seu e-mail"
+                    placeholderTextColor="#9CA3AF"
+                    value={value}
+                    onChangeText={onChange}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    returnKeyType="next"
+                    scrollEnabled={false}
+                    multiline={false}
+                    numberOfLines={1}
+                    onSubmitEditing={() => focusInput("password")}
+                  />
+                )}
+              />
+              {errors.email && (
+                <Text className="text-red-500 mb-3">
+                  {errors.email.message}
+                </Text>
+              )}
+
+              <Text className="text-sm font-rregular text-gray-600 mb-1">
+                Senha *
+              </Text>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, value } }) => (
+                  <View className="relative mb-3">
+                    <TextInput
+                      ref={(ref) => (inputRefs.current["password"] = ref)}
+                      className="w-full h-12 bg-white rounded-2xl px-4 py-0 pr-12 text-base font-rregular border border-gray-200"
+                      style={{ textAlignVertical: "center" }}
+                      placeholder="Sua senha"
+                      placeholderTextColor="#9CA3AF"
+                      value={value}
+                      onChangeText={onChange}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      autoComplete="password"
+                      returnKeyType="next"
+                      scrollEnabled={false}
+                      multiline={false}
+                      numberOfLines={1}
+                      onSubmitEditing={() => focusInput("confirmPassword")}
+                    />
+                    <TouchableOpacity
+                      className="absolute right-3 top-0 h-12 justify-center items-center"
+                      onPress={() => setShowPassword(!showPassword)}
+                      activeOpacity={0.7}
+                      style={{ width: 36, height: 48 }}
+                    >
+                      <MaterialCommunityIcons
+                        name={showPassword ? "eye-off" : "eye"}
+                        size={24}
+                        color="#9CA3AF"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+              {errors.password && (
+                <Text className="text-red-500 mb-3">
+                  {errors.password.message}
+                </Text>
+              )}
+
+              <Text className="text-sm font-rregular text-gray-600 mb-1">
+                Confirmar senha *
+              </Text>
+              <Controller
+                control={control}
+                name="confirmPassword"
+                render={({ field: { onChange, value } }) => (
+                  <View
+                    className={`relative ${
+                      errors.confirmPassword ? "mb-2" : "mb-4"
+                    }`}
+                  >
+                    <TextInput
+                      ref={(ref) =>
+                        (inputRefs.current["confirmPassword"] = ref)
+                      }
+                      className="w-full h-12 bg-white rounded-2xl px-4 py-0 pr-12 text-base font-rregular border border-gray-200"
+                      style={{ textAlignVertical: "center" }}
+                      placeholder="Confirme sua senha"
+                      placeholderTextColor="#9CA3AF"
+                      value={value}
+                      onChangeText={onChange}
+                      secureTextEntry={!showConfirmPassword}
+                      autoCapitalize="none"
+                      autoComplete="password"
+                      returnKeyType="done"
+                      scrollEnabled={false}
+                      multiline={false}
+                      numberOfLines={1}
+                      onSubmitEditing={() => Keyboard.dismiss()}
+                    />
+                    <TouchableOpacity
+                      className="absolute right-3 top-0 h-12 justify-center items-center"
+                      onPress={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      activeOpacity={0.7}
+                      style={{ width: 36, height: 48 }}
+                    >
+                      <MaterialCommunityIcons
+                        name={showConfirmPassword ? "eye-off" : "eye"}
+                        size={24}
+                        color="#9CA3AF"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+              {errors.confirmPassword && (
+                <Text className="text-red-500 mb-4">
+                  {errors.confirmPassword.message}
+                </Text>
+              )}
+
+              <Text className="text-xl font-rsemi text-textcolor mb-4">
+                Informações adicionais <Text className="align-center text-sm font-rregular text-secondary">(opcional)</Text>
+              </Text>
 
               <Text className={`text-sm font-rregular text-gray-600`}>
                 Gênero
@@ -279,15 +409,22 @@ const Register = () => {
                   };
                   return (
                     <TextInput
-                      className={`w-full h-12 bg-white rounded-2xl px-4 text-base font-rregular border border-gray-200 ${
+                      ref={(ref) => (inputRefs.current["birthDate"] = ref)}
+                      className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
                         errors.birthDate ? "mb-2" : "mb-3"
                       }`}
+                      style={{ textAlignVertical: "center" }}
                       placeholder="DD/MM/AAAA"
                       placeholderTextColor="#9CA3AF"
                       value={value}
                       onChangeText={handleDateChange}
                       keyboardType="numeric"
                       maxLength={10}
+                      returnKeyType="next"
+                      scrollEnabled={false}
+                      multiline={false}
+                      numberOfLines={1}
+                      onSubmitEditing={() => focusInput("weight")}
                     />
                   );
                 }}
@@ -306,18 +443,23 @@ const Register = () => {
                 name="weight"
                 render={({ field: { onChange, value } }) => (
                   <TextInput
-                    className={`w-full h-12 bg-white rounded-2xl px-4 text-base font-rregular border border-gray-200 ${
+                    ref={(ref) => (inputRefs.current["weight"] = ref)}
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
                       errors.weight ? "mb-2" : "mb-3"
                     }`}
+                    style={{ textAlignVertical: "center" }}
                     placeholder="Ex: 70.5"
                     placeholderTextColor="#9CA3AF"
                     value={value ? value.toString() : ""}
                     onChangeText={(text) => {
-                      const normalizedText = text.replace(',', '.');
-                      
+                      const normalizedText = text.replace(",", ".");
+
                       if (normalizedText === "") {
                         onChange(undefined);
-                      } else if (normalizedText === "." || normalizedText.endsWith('.')) {
+                      } else if (
+                        normalizedText === "." ||
+                        normalizedText.endsWith(".")
+                      ) {
                         onChange(normalizedText);
                       } else {
                         const numericValue = parseFloat(normalizedText);
@@ -330,6 +472,11 @@ const Register = () => {
                     }}
                     keyboardType="decimal-pad"
                     maxLength={6}
+                    returnKeyType="next"
+                    scrollEnabled={false}
+                    multiline={false}
+                    numberOfLines={1}
+                    onSubmitEditing={() => focusInput("height")}
                   />
                 )}
               />
@@ -347,33 +494,40 @@ const Register = () => {
                 name="height"
                 render={({ field: { onChange, value } }) => (
                   <TextInput
-                    className={`w-full h-12 bg-white rounded-2xl px-4 text-base font-rregular border border-gray-200 ${
+                    ref={(ref) => (inputRefs.current["height"] = ref)}
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
                       errors.height ? "mb-2" : "mb-3"
                     }`}
+                    style={{ textAlignVertical: "center" }}
                     placeholder="Ex: 175.5"
                     placeholderTextColor="#9CA3AF"
                     value={value ? value.toString() : ""}
                     onChangeText={(text) => {
-                      // Substitui vírgula por ponto para padronização
-                      const normalizedText = text.replace(',', '.');
-                      
+                      const normalizedText = text.replace(",", ".");
+
                       if (normalizedText === "") {
                         onChange(undefined);
-                      } else if (normalizedText === "." || normalizedText.endsWith('.')) {
-                        // Permite digitar ponto/vírgula no final
+                      } else if (
+                        normalizedText === "." ||
+                        normalizedText.endsWith(".")
+                      ) {
                         onChange(normalizedText);
                       } else {
                         const numericValue = parseFloat(normalizedText);
                         if (!isNaN(numericValue)) {
                           onChange(numericValue);
                         } else {
-                          // Mantém o texto se não for um número válido ainda (ex: "7.")
                           onChange(normalizedText);
                         }
                       }
                     }}
                     keyboardType="decimal-pad"
                     maxLength={6}
+                    returnKeyType="next"
+                    scrollEnabled={false}
+                    multiline={false}
+                    numberOfLines={1}
+                    onSubmitEditing={() => focusInput("medical")}
                   />
                 )}
               />
@@ -389,18 +543,63 @@ const Register = () => {
               <Controller
                 control={control}
                 name="goal"
-                render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    className={`w-full min-h-12 max-h-24 bg-white rounded-2xl px-4 py-2 text-base font-rregular border border-gray-200 ${
-                      errors.goal ? "mb-2" : "mb-3"
-                    }`}
-                    placeholder="Seus objetivos (até 200 caracteres)"
-                    placeholderTextColor="#9CA3AF"
-                    value={value}
-                    onChangeText={onChange}
-                    multiline
-                    maxLength={200}
-                  />
+                render={({ field: { value, onChange } }) => (
+                  <View
+                    className={`flex flex-col ${errors.goal ? "mb-2" : "mb-3"}`}
+                  >
+                    <Pressable
+                      className={`w-full h-12 rounded-2xl border ${
+                        value === "weight_loss"
+                          ? "bg-lightgreen border-lightgreen"
+                          : "bg-white border-gray-200"
+                      } justify-center items-center mb-2`}
+                      onPress={() => onChange("weight_loss")}
+                    >
+                      <Text
+                        className={`text-base font-rregular ${
+                          value === "weight_loss"
+                            ? "text-black"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        Emagrecimento
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      className={`w-full h-12 rounded-2xl border ${
+                        value === "muscle_gain"
+                          ? "bg-lightgreen border-lightgreen"
+                          : "bg-white border-gray-200"
+                      } justify-center items-center mb-2`}
+                      onPress={() => onChange("muscle_gain")}
+                    >
+                      <Text
+                        className={`text-base font-rregular ${
+                          value === "muscle_gain"
+                            ? "text-black"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        Ganho de massa muscular
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      className={`w-full h-12 rounded-2xl border ${
+                        value === "other"
+                          ? "bg-lightgreen border-lightgreen"
+                          : "bg-white border-gray-200"
+                      } justify-center items-center`}
+                      onPress={() => onChange("other")}
+                    >
+                      <Text
+                        className={`text-base font-rregular ${
+                          value === "other" ? "text-black" : "text-gray-600"
+                        }`}
+                      >
+                        Outro
+                      </Text>
+                    </Pressable>
+                  </View>
                 )}
               />
               {errors.goal && (
@@ -408,22 +607,27 @@ const Register = () => {
               )}
 
               <Text className="text-sm font-rregular text-gray-600 mb-1">
-                Complicações médicas
+                Condições médicas
               </Text>
               <Controller
                 control={control}
                 name="medical"
                 render={({ field: { onChange, value } }) => (
                   <TextInput
+                    ref={(ref) => (inputRefs.current["medical"] = ref)}
                     className={`w-full min-h-12 max-h-24 bg-white rounded-2xl px-4 py-2 text-base font-rregular border border-gray-200 ${
                       errors.medical ? "mb-2" : "mb-3"
                     }`}
-                    placeholder="Complicações médicas (até 200 caracteres)"
+                    style={{ textAlignVertical: "top" }}
+                    placeholder="Condições médicas (até 200 caracteres)"
                     placeholderTextColor="#9CA3AF"
                     value={value}
                     onChangeText={onChange}
                     multiline
+                    scrollEnabled
                     maxLength={200}
+                    returnKeyType="next"
+                    onSubmitEditing={() => focusInput("email")}
                   />
                 )}
               />
@@ -433,145 +637,39 @@ const Register = () => {
                 </Text>
               )}
 
-              <Text className="text-sm font-rregular text-gray-600 mb-1">
-                E-mail
-              </Text>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    className={`w-full h-12 bg-white rounded-2xl px-4 text-base font-rregular border border-gray-200 ${
-                      errors.email ? "mb-2" : "mb-3"
-                    }`}
-                    placeholder="Seu e-mail"
-                    placeholderTextColor="#9CA3AF"
-                    value={value}
-                    onChangeText={onChange}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    autoComplete="email"
-                    returnKeyType="next"
-                  />
-                )}
-              />
-              {errors.email && (
-                <Text className="text-red-500 mb-3">
-                  {errors.email.message}
-                </Text>
-              )}
-
-              <Text className="text-sm font-rregular text-gray-600 mb-1">
-                Senha
-              </Text>
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onChange, value } }) => (
-                  <View className="relative mb-3">
-                    <TextInput
-                      className="w-full h-12 bg-white rounded-2xl px-4 pr-12 text-base font-rregular border border-gray-200"
-                      placeholder="Sua senha"
-                      placeholderTextColor="#9CA3AF"
-                      value={value}
-                      onChangeText={onChange}
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      autoComplete="password"
-                      returnKeyType="next"
-                    />
-                    <TouchableOpacity
-                      className="absolute right-3 top-0 h-12 justify-center items-center"
-                      onPress={() => setShowPassword(!showPassword)}
-                      activeOpacity={0.7}
-                      style={{ width: 36, height: 48 }}
-                    >
-                      <MaterialCommunityIcons
-                        name={showPassword ? "eye-off" : "eye"}
-                        size={24}
-                        color="#9CA3AF"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              />
-              {errors.password && (
-                <Text className="text-red-500 mb-3">
-                  {errors.password.message}
-                </Text>
-              )}
-
-              <Text className="text-sm font-rregular text-gray-600 mb-1">
-                Confirmar senha
-              </Text>
-              <Controller
-                control={control}
-                name="confirmPassword"
-                render={({ field: { onChange, value } }) => (
-                  <View
-                    className={`relative ${
-                      errors.confirmPassword ? "mb-2" : "mb-4"
-                    }`}
-                  >
-                    <TextInput
-                      className="w-full h-12 bg-white rounded-2xl px-4 pr-12 text-base font-rregular border border-gray-200"
-                      placeholder="Confirme sua senha"
-                      placeholderTextColor="#9CA3AF"
-                      value={value}
-                      onChangeText={onChange}
-                      secureTextEntry={!showConfirmPassword}
-                      autoCapitalize="none"
-                      autoComplete="password"
-                      returnKeyType="done"
-                    />
-                    <TouchableOpacity
-                      className="absolute right-3 top-0 h-12 justify-center items-center"
-                      onPress={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      activeOpacity={0.7}
-                      style={{ width: 36, height: 48 }}
-                    >
-                      <MaterialCommunityIcons
-                        name={showConfirmPassword ? "eye-off" : "eye"}
-                        size={24}
-                        color="#9CA3AF"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                )}
-              />
-              {errors.confirmPassword && (
-                <Text className="text-red-500 mb-4">
-                  {errors.confirmPassword.message}
-                </Text>
-              )}
-
               <Pressable
+                disabled={!isValid}
                 className={`w-full h-12 mb-4 ${
-                  Object.keys(errors).length
+                  !isValid
                     ? "bg-grayish opacity-50"
                     : "bg-secondary"
                 } rounded-2xl justify-center items-center`}
                 onPress={handleSubmit(onSubmit)}
               >
-                <Text className="text-white text-base font-rsemi">Registrar</Text>
-              </Pressable>
-
-              <View className="flex flex-row justify-start">
-                <Text className="text-sm font-rregular text-gray-600 mr-2">
-                  Já possui conta?
+                <Text className="text-white text-base font-rsemi">
+                  Registrar
                 </Text>
-                <Pressable onPress={() => router.push("/login")}>
-                  <Text className="text-sm font-rsemi text-lightgreen">
-                    Entrar
-                  </Text>
-                </Pressable>
-              </View>
+              </Pressable>
             </View>
-            <View style={{ height: keyboardVisible ? 40 : 20 }} />
+            <View style={{ height: keyboardVisible ? 10 : 40 }} />
           </View>
         </ScrollView>
+
+        <View
+          className={`absolute bottom-0 left-0 right-0 bg-primary border-t border-gray-200 px-4 py-4 ${
+            keyboardVisible ? "hidden" : ""
+          }`}
+        >
+          <Text className="text-xs font-rregular text-gray-600 text-center">
+            Já possui conta?{" "}
+            <Text
+              className="text-xs font-rsemi text-lightgreen"
+              onPress={() => router.push("/login")}
+            >
+              Entrar
+            </Text>
+          </Text>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

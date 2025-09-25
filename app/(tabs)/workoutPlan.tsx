@@ -67,11 +67,18 @@ const WorkoutPlan = () => {
           <FontAwesome6 name="arrow-left" size={32} color="textcolor" />
         </TouchableOpacity>
         <Text className="font-rbold text-3xl color-textcolor">Treinos</Text>
-        <Link asChild href="/modals/addWorkoutModal">
-          <TouchableOpacity className="h-12 w-12 items-center justify-center">
-            <AntDesign name="pluscircle" size={40} color="#A3A65B" />
-          </TouchableOpacity>
-        </Link>
+        <View className="flex-row items-center">
+          <Link asChild href="/workoutPlans">
+            <TouchableOpacity className="h-12 w-12 items-center justify-center mr-2">
+              <FontAwesome6 name="clipboard-list" size={32} color="#A3A65B" />
+            </TouchableOpacity>
+          </Link>
+          <Link asChild href="/modals/addWorkoutModal">
+            <TouchableOpacity className="h-12 w-12 items-center justify-center">
+              <AntDesign name="pluscircle" size={40} color="#A3A65B" />
+            </TouchableOpacity>
+          </Link>
+        </View>
       </View>
       <Link asChild href="/calendar">
         <Pressable className="w-5/6 h-32 flex-row justify-between items-center">
@@ -116,9 +123,18 @@ const WorkoutPlan = () => {
             </Text>
           </View>
         ) : (
-          <Text className="text-darkgreen font-rbold ml-5 mb-3 text-base">
-            Plano de treinos atual
-          </Text>
+          <View className="flex-row justify-between items-center px-5 mb-3">
+            <Text className="text-darkgreen font-rbold text-base">
+              Treinos atuais
+            </Text>
+            {saveWorkout.length >= 2 && (
+              <View className="bg-lightgreen/30 rounded-full px-3 py-1">
+                <Text className="text-darkgreen font-rsemi text-xs">
+                  Pronto para criar plano
+                </Text>
+              </View>
+            )}
+          </View>
         )}
         <View className="w-full h-full items-center">
           <FlatList

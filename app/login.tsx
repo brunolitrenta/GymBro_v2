@@ -162,7 +162,7 @@ const Login = () => {
 
               <Pressable
                 disabled={!email.trim() || !password.trim()}
-                className={`w-full h-14 ${
+                className={`w-full h-14 mb-6 ${
                   !email.trim() || !password.trim()
                     ? "bg-grayish"
                     : "bg-secondary"
@@ -173,6 +173,14 @@ const Login = () => {
               >
                 <Text className="text-white text-lg font-rsemi">Entrar</Text>
               </Pressable>
+
+              <View className="flex flex-row justify-start"> 
+                <Text className="text-base font-rregular text-gray-600 mr-2">Não possui conta?</Text>
+                <Pressable onPress={() => router.push("/register")}>
+                  <Text className="text-base font-rsemi text-lightgreen">Registre-se agora</Text>
+                </Pressable>
+              </View>
+
             </View>
 
             <View style={{ height: keyboardVisible ? 100 : 50 }} />

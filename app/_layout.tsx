@@ -29,6 +29,7 @@ const RootLayout = () => {
       <WorkoutContextProvider>
         <Stack>
           <Stack.Screen name="login" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
+          <Stack.Screen name="register" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
           <Stack.Screen name="workout/[label]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />
           <Stack.Screen name="exercise/[id]" options={{ headerShown: false, statusBarTranslucent: true, navigationBarHidden: true }} />

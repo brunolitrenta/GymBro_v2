@@ -55,8 +55,13 @@ const ExercisePage = () => {
         () => workoutData.find((item) => item.id === exerciseId),
         [exerciseId]
     );
+    const teste = "xablau";
+    const [loadIsActive, setLoadIsActive] = useState(false);
+    const [setsIsActive, setSetsIsActive] = useState(false);
+    const [restTimeIsActive, setRestTimeIsActive] = useState(false);
+    const [notesIsActive, setNotesIsActive] = useState(false);
 
-    const [load, setLoad] = useState("");
+    const [load, setLoad] = useState(teste);
     const [sets, setSets] = useState("");
     const [restTime, setRestTime] = useState("");
     const [notes, setNotes] = useState("");
@@ -65,22 +70,7 @@ const ExercisePage = () => {
     const isSaveDisabled = !load.trim() || !sets.trim() || !restTime.trim();
 
     const handleSaveLog = () => {
-        if (isSaveDisabled) return;
-
-        const newLog: ExerciseLog = {
-            id: `${Date.now()}`,
-            load: load.trim(),
-            sets: sets.trim(),
-            restTime: restTime.trim(),
-            notes: notes.trim(),
-            createdAt: new Date().toLocaleString(),
-        };
-
-        setLogs((prev) => [newLog, ...prev]);
-        setLoad("");
-        setSets("");
-        setRestTime("");
-        setNotes("");
+        
     };
 
     if (!exerciseData) {
@@ -157,36 +147,52 @@ const ExercisePage = () => {
                             </View>
                         </View>
 
-                        <View className="bg-white rounded-3xl p-4 shadow shadow-black/10 mb-6">
+
+
+                        <View className="bg-white rounded-3xl p-6 shadow shadow-black/10 mb-6">
                             <Text className="text-textcolor font-rbold text-lg mb-4">
                                 Registrar desempenho
                             </Text>
 
                             <View className="flex-row justify-between mb-4">
-                                <View className="w-[48%]">
+                                <View className='w-[45%]'>
                                     <Text className="text-gray-600 font-rregular mb-2">
                                         Carga (kg)
                                     </Text>
-                                    <TextInput
-                                        value={load}
-                                        onChangeText={setLoad}
-                                        placeholder="Ex: 50"
-                                        placeholderTextColor="#9CA3AF"
-                                        keyboardType="numeric"
-                                        className="h-14 bg-lightgreen/40 rounded-2xl px-4 text-lg font-rregular"
-                                    />
+                                    <View className='flex-row justify-between items-center'>
+                                        <TextInput
+                                            value={load}
+                                            onChangeText={setLoad}
+                                            placeholder="Ex: 50"
+                                            editable={loadIsActive}
+                                            placeholderTextColor="#9CA3AF"
+                                            keyboardType="numeric"
+                                            className="h-14 w-[76%] bg-lightgreen/40 rounded-2xl px-4 text-lg font-rregular"
+                                        />
+                                        <TouchableOpacity>
+                                            <FontAwesome6 name="pen" size={32} color="#000000ff" onPress={() => setLoadIsActive(true)}/>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
-                                <View className="w-[48%]">
+
+                                <View className="w-[45%]">
                                     <Text className="text-gray-600 font-rregular mb-2">
                                         Séries x repetições
                                     </Text>
-                                    <TextInput
-                                        value={sets}
-                                        onChangeText={setSets}
-                                        placeholder="Ex: 4 x 10"
-                                        placeholderTextColor="#9CA3AF"
-                                        className="h-14 bg-lightgreen/40 rounded-2xl px-4 text-lg font-rregular"
-                                    />
+                                    <View className='flex-row justify-between items-center'>
+                                        <TextInput
+                                            value={sets}
+                                            onChangeText={setSets}
+                                            editable={setsIsActive}
+                                            placeholder="Ex: 4 x 10"
+                                            placeholderTextColor="#9CA3AF"
+                                            keyboardType="numeric"
+                                            className="h-14 w-[76%] bg-lightgreen/40 rounded-2xl px-4 text-lg font-rregular"
+                                        />
+                                        <TouchableOpacity>
+                                            <FontAwesome6 name="pen" size={32} color="#000000ff" onPress={() => setSetsIsActive(true)}/>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
 
@@ -194,37 +200,48 @@ const ExercisePage = () => {
                                 <Text className="text-gray-600 font-rregular mb-2">
                                     Descanso (min)
                                 </Text>
-                                <TextInput
-                                    value={restTime}
-                                    onChangeText={setRestTime}
-                                    placeholder="Ex: 01:30"
-                                    placeholderTextColor="#9CA3AF"
-                                    className="h-14 bg-lightgreen/40 rounded-2xl px-4 text-lg font-rregular"
-                                />
+                                <View className='flex-row justify-between items-center'>
+                                    <TextInput
+                                        value={restTime}
+                                        onChangeText={setRestTime}
+                                        editable={restTimeIsActive}
+                                        placeholder="Ex: 01:30"
+                                        placeholderTextColor="#9CA3AF"
+                                        className="h-14 w-[90%] bg-lightgreen/40 rounded-2xl px-4 text-lg font-rregular"
+                                    />
+                                    <TouchableOpacity>
+                                        <FontAwesome6 name="pen" size={32} color="#000000ff" onPress={() => setRestTimeIsActive(true)}/>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
                             <View className="mb-4">
                                 <Text className="text-gray-600 font-rregular mb-2">
                                     Anotações gerais
                                 </Text>
-                                <TextInput
-                                    value={notes}
-                                    onChangeText={setNotes}
-                                    placeholder="Registre detalhes importantes do treino"
-                                    placeholderTextColor="#9CA3AF"
-                                    multiline
-                                    numberOfLines={4}
-                                    className="bg-lightgreen/40 rounded-2xl px-4 py-3 text-lg font-rregular min-h-[120px]"
-                                />
+                                <View className='flex-row justify-between items-center'>
+                                    <TextInput
+                                        value={notes}
+                                        onChangeText={setNotes}
+                                        editable={notesIsActive}
+                                        placeholder="Registre detalhes importantes do treino"
+                                        placeholderTextColor="#9CA3AF"
+                                        multiline
+                                        numberOfLines={2}
+                                        className="bg-lightgreen/40 w-[90%] rounded-2xl px-4 py-3 text-lg font-rregular min-h-[60px]"
+                                    />
+                                    <TouchableOpacity onPress={() => { }}>
+                                        <FontAwesome6 name="pen" size={32} color="#000000ff" onPress={() => setNotesIsActive(true)}/>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
                             <TouchableOpacity
                                 activeOpacity={0.8}
                                 disabled={isSaveDisabled}
                                 onPress={handleSaveLog}
-                                className={`flex-row items-center justify-center h-14 rounded-2xl ${
-                                    isSaveDisabled ? "bg-grayish opacity-50" : "bg-secondary"
-                                }`}
+                                className={`flex-row items-center justify-center h-14 rounded-2xl ${isSaveDisabled ? "bg-grayish opacity-50" : "bg-secondary"
+                                    }`}
                             >
                                 <MaterialCommunityIcons
                                     name="content-save"

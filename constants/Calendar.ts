@@ -3,4 +3,4 @@ export const months = [
     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
   ];
   
-  export const weeks = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+  export const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];

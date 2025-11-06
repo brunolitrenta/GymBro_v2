@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { months, weeks } from "../constants/Calendar";
+import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
+import { months, weekDays } from "../constants/Calendar";
 import { FontAwesome, FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
 import { router } from "expo-router";
 
@@ -70,12 +69,12 @@ const Calendario = () => {
           {day ? (
             <TouchableOpacity
               className={`w-9 h-9 items-center justify-center rounded-full ${
-                isToday ? "bg-green-500" : ""
+                isToday ? "bg-lightgreen" : ""
               }`}
             >
               <Text
                 className={`text-base ${
-                  isToday ? "text-white font-bold" : "text-black"
+                  isToday ? "text-secondary font-bold" : "text-white"
                 }`}
               >
                 {day}
@@ -91,7 +90,7 @@ const Calendario = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-white items-center gap-[10%] p-4">
-      <View className="flex-row w-5/6 h-8 justify-between  mt-[10%] items-center">
+      <View className="flex-row w-11/12 h-8 justify-between  mt-[10%] items-center">
         <TouchableOpacity
           className="h-12 w-10 items-center justify-center"
           onPress={() => router.back()}
@@ -115,21 +114,21 @@ const Calendario = () => {
           <Text className="font-rregular">streaks</Text>
         </View>
       </View>
-      <View>
+      <View className="bg-secondary rounded-2xl p-4 w-11/12">
         <View className="w-full flex-row justify-between items-center mb-4">
           <TouchableOpacity onPress={handlePrevMonth}>
-            <FontAwesome name="chevron-left" size={24} color="black" />
+            <FontAwesome name="chevron-left" size={24} color="white" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold">
+          <Text className="text-xl font-bold text-white">
             {monthName} {currentYear}
           </Text>
           <TouchableOpacity onPress={handleNextMonth}>
-            <FontAwesome name="chevron-right" size={24} color="black" />
+            <FontAwesome name="chevron-right" size={24} color="white" />
           </TouchableOpacity>
         </View>
         <View className="w-full flex-row justify-around mb-2">
-          {weeks.map((weekDay, idx) => (
-            <Text key={idx} className="w-8 text-center text-sm font-semibold">
+          {weekDays.map((weekDay, idx) => (
+            <Text key={idx} className="w-10 text-center text-xs font-semibold text-white" numberOfLines={1}>
               {weekDay}
             </Text>
           ))}

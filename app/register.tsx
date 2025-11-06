@@ -13,12 +13,14 @@ import {
   TouchableOpacity,
   Keyboard,
   Dimensions,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { registerSchema } from "@/types/user";
 import api from "@/utils/axiosConfig";
+import { weekDays } from "@/constants/Calendar";
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -40,11 +42,13 @@ const Register = () => {
     mode: "onChange",
     defaultValues: {
       name: "",
+      userType: undefined,
       gender: undefined,
       birthDate: "",
       weight: undefined,
       height: undefined,
       goal: undefined,
+      workoutDays: [],
       medical: "",
       email: "",
       password: "",
@@ -82,24 +86,56 @@ const Register = () => {
   };
 
   const onSubmit = async (data: RegisterForm) => {
+    try {
+      const res = await api.post("/users", {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        birthdate: data.birthDate || null,
+        gender: data.gender || null,
+        goal: data.goal || null,
+        height: data.height || null,
+        weight: data.weight || null,
+        workoutDays: data.workoutDays || null,
+        medical: data.medical || null,
+        type: data.userType,
+      });
 
-    const res = await api.post("/users", {
-      name: data.name,
-      email: data.email,
-      password: data.password,
-      birthdate: data.birthDate || null,
-      gender: data.gender || null,
-      goal: data.goal || null,
-      height: data.height || null,
-      weight: data.weight || null,
-      medical: data.medical || null,
-      type: "user",
-    });
+      console.log("Resposta do registro:", res.data);
+      router.replace("/login");
+    } catch (error: unknown) {
+      console.error("Erro ao registrar usuário:", error);
+      const err = error as any;
+      let message = "Erro ao registrar-se";
 
-    console.log(res)
-    console.log(res.data);
-    router.push("/login");
-    //api.post
+      if (err?.response?.data) {
+        const data = err.response.data;
+        if (typeof data === "string") {
+          message = data;
+        } else if (data.message) {
+          message = data.message;
+        } else if (Array.isArray(data.errors)) {
+          message = data.errors
+            .map((e: any) => e.message || e.msg || JSON.stringify(e))
+            .join("\n");
+        } else {
+          try {
+            message = JSON.stringify(data);
+          } catch {
+            message = String(data);
+          }
+        }
+      } else if (err?.message) {
+        message = err.message;
+      }
+
+      Alert.alert("Erro", message, [
+        {
+          text: "Ok",
+          style: "destructive",
+        },
+      ]);
+    }
   };
 
   return (
@@ -177,6 +213,59 @@ const Register = () => {
               />
               {errors.name && (
                 <Text className="text-red-500 mb-3">{errors.name.message}</Text>
+              )}
+
+              <Text className="text-sm font-rregular text-gray-600 mb-1">
+                Tipo de usuário *
+              </Text>
+              <Controller
+                control={control}
+                name="userType"
+                render={({ field: { value, onChange } }) => (
+                  <View
+                    className={`flex flex-row ${
+                      errors.userType ? "mb-2" : "mb-3"
+                    }`}
+                  >
+                    <Pressable
+                      className={`flex-1 h-12 rounded-2xl border ${
+                        value === "common"
+                          ? "bg-lightgreen border-lightgreen"
+                          : "bg-white border-gray-200"
+                      } justify-center items-center mr-2`}
+                      onPress={() => onChange("common")}
+                    >
+                      <Text
+                        className={`text-base font-rregular ${
+                          value === "common" ? "text-black" : "text-gray-600"
+                        }`}
+                      >
+                        Comum
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      className={`flex-1 h-12 rounded-2xl border ${
+                        value === "trainer"
+                          ? "bg-lightgreen border-lightgreen"
+                          : "bg-white border-gray-200"
+                      } justify-center items-center ml-2`}
+                      onPress={() => onChange("trainer")}
+                    >
+                      <Text
+                        className={`text-base font-rregular ${
+                          value === "trainer" ? "text-black" : "text-gray-600"
+                        }`}
+                      >
+                        Treinador
+                      </Text>
+                    </Pressable>
+                  </View>
+                )}
+              />
+              {errors.userType && (
+                <Text className="text-red-500 mb-3">
+                  {errors.userType.message}
+                </Text>
               )}
 
               <Text className="text-sm font-rregular text-gray-600 mb-1">
@@ -314,7 +403,10 @@ const Register = () => {
               )}
 
               <Text className="text-xl font-rsemi text-textcolor mb-4">
-                Informações adicionais <Text className="align-center text-sm font-rregular text-secondary">(opcional)</Text>
+                Informações adicionais{" "}
+                <Text className="align-center text-sm font-rregular text-secondary">
+                  (opcional)
+                </Text>
               </Text>
 
               <Text className={`text-sm font-rregular text-gray-600`}>
@@ -606,6 +698,53 @@ const Register = () => {
                 <Text className="text-red-500 mb-3">{errors.goal.message}</Text>
               )}
 
+              <Text className="text-sm font-rregular text-gray-600 mb-2">
+                Dias de treino
+              </Text>
+              <Controller
+                control={control}
+                name="workoutDays"
+                render={({ field: { value = [], onChange } }) => (
+                  <View className={`${errors.workoutDays ? "mb-2" : "mb-3"}`}>
+                    <View className="flex flex-row justify-between">
+                      {weekDays.map((day, index) => {
+                        const isSelected = value.includes(index);
+                        return (
+                          <Pressable
+                            key={index}
+                            className={`flex-1 h-12 rounded-2xl border mx-0.5 ${
+                              isSelected
+                                ? "bg-lightgreen border-lightgreen"
+                                : "bg-white border-gray-200"
+                            } justify-center items-center shadow-sm`}
+                            onPress={() => {
+                              if (isSelected) {
+                                onChange(value.filter((d) => d !== index));
+                              } else {
+                                onChange([...value, index].sort());
+                              }
+                            }}
+                          >
+                            <Text
+                              className={`text-sm font-rsemi ${
+                                isSelected ? "text-black" : "text-gray-600"
+                              }`}
+                            >
+                              {day}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
+              />
+              {errors.workoutDays && (
+                <Text className="text-red-500 mb-3">
+                  {errors.workoutDays.message}
+                </Text>
+              )}
+
               <Text className="text-sm font-rregular text-gray-600 mb-1">
                 Condições médicas
               </Text>
@@ -640,9 +779,7 @@ const Register = () => {
               <Pressable
                 disabled={!isValid}
                 className={`w-full h-12 mb-4 ${
-                  !isValid
-                    ? "bg-grayish opacity-50"
-                    : "bg-secondary"
+                  !isValid ? "bg-grayish opacity-50" : "bg-secondary"
                 } rounded-2xl justify-center items-center`}
                 onPress={handleSubmit(onSubmit)}
               >

@@ -4,10 +4,10 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
+  SafeAreaView
 } from "react-native";
 import React, { useState } from "react";
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Entypo, FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
 import { workoutData } from "@/datasets/exercises";
 import { IExercise } from "@/interfaces/IExercise";
@@ -20,9 +20,7 @@ const DynamicWorkout = () => {
 
   const parsedExercises: number[] = JSON.parse(exercises!);
 
-  const [exercisesCompleted, setExercisesCompleted] = useState<
-    Array<number | string>
-  >([]);
+  const [exercisesCompleted, setExercisesCompleted] = useState<(number | string)[]>([]);
 
   function filterExercises() {
     return workoutData.filter((wk) => parsedExercises?.includes(wk.id));
@@ -31,7 +29,7 @@ const DynamicWorkout = () => {
   const filteredExercises = filterExercises();
 
   function renderExercise({ item }: { item: IExercise }) {
-    const foundExercise = exercisesCompleted.find((ex) => ex == item.id);
+    const foundExercise = exercisesCompleted.find((ex) => ex === item.id);
 
     return (
       <Link
@@ -48,11 +46,13 @@ const DynamicWorkout = () => {
           <Pressable
             className="w-12 h-12 items-center justify-center"
             onPress={() => {
-              foundExercise
-                ? setExercisesCompleted(
-                    exercisesCompleted.filter((ex) => ex != item.id)
-                  )
-                : setExercisesCompleted((pv) => [...pv, item.id]);
+              if (foundExercise) {
+                setExercisesCompleted(
+                  exercisesCompleted.filter((ex) => ex !== item.id)
+                );
+              } else {
+                setExercisesCompleted((pv) => [...pv, item.id]);
+              }
             }}
           >
             {foundExercise ? (
@@ -68,7 +68,6 @@ const DynamicWorkout = () => {
 
   return (
     <SafeAreaView
-      edges={["top"]}
       className="flex-1 flex-column justify-evenly items-center bg-primary"
     >
       <View className="flex-row w-5/6 h-8 justify-between items-center">
@@ -104,10 +103,10 @@ const DynamicWorkout = () => {
         </View>
       </View>
       <TouchableOpacity
-        disabled={exercisesCompleted.length == 0 ? true : false}
+        disabled={exercisesCompleted.length === 0 ? true : false}
         activeOpacity={0.7}
         className={
-          exercisesCompleted.length == 0
+          exercisesCompleted.length === 0
             ? "flex-row w-11/12 h-16 fixed bottom-6 bg-stronggreen justify-evenly items-center rounded-2xl opacity-60"
             : "flex-row w-11/12 h-16 fixed bottom-6 bg-stronggreen justify-evenly items-center rounded-2xl"
         }

@@ -1,8 +1,7 @@
-import { Pressable, Text, View, Image } from "react-native";
+import { Pressable, Text, View, Image, SafeAreaView } from "react-native";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { weekDays } from "@/constants/weekDays";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { weekDays } from "@/constants/Calendar";
 import { useAuth } from "@/hooks/authContext";
 
 const Index = () => {
@@ -10,12 +9,11 @@ const Index = () => {
   const { userName } = useAuth();
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      className="flex-1 flex-column items-center justify-evenly bg-primary"
-    >
-      <View className="flex-row justify-between w-11/12 h-9 items-center">
-        <Text className="text-3xl font-rbold text-textcolor">Bem vindo, {userName}!</Text>
+    <SafeAreaView className="flex-1 flex-column items-center justify-evenly bg-primary">
+      <View className="flex-row justify-between w-11/12 h-14 items-center">
+        <Text className="text-2xl font-rbold text-textcolor">
+          Bem vindo, {userName}!
+        </Text>
         <Link asChild href="/modals/creditsModal">
           <Pressable className="bg-lightgreen w-14 h-14 justify-center items-center rounded-full">
             <MaterialCommunityIcons name="teddy-bear" size={38} color="black" />

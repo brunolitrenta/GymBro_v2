@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   View,
   Text,
@@ -16,16 +19,29 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/authContext";
 import { router } from "expo-router";
+import { loginSchema } from "@/types/user";
+
+type LoginForm = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [screenHeight, setScreenHeight] = useState(
     Dimensions.get("window").height
   );
   const { login } = useAuth();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -52,14 +68,9 @@ const Login = () => {
     };
   }, []);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      Alert.alert("Erro", "Por favor, preencha email e senha");
-      return;
-    }
-
+  const onSubmit = async (data: LoginForm) => {
     try {
-      await login(email.trim(), password.trim());
+      await login(data.email.trim(), data.password.trim());
       router.replace("/(tabs)");
     } catch (error) {
       Alert.alert("Erro", error instanceof Error ? error.message : "Ocorreu um erro inesperado");
@@ -117,59 +128,79 @@ const Login = () => {
               <Text className="text-base font-rregular text-gray-600 mb-2">
                 E-mail
               </Text>
-              <TextInput
-                className="w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 mb-4"
-                placeholder="Seu e-mail"
-                placeholderTextColor="#9CA3AF"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-                returnKeyType="next"
-                submitBehavior="blurAndSubmit"
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 ${
+                      errors.email ? "mb-2" : "mb-4"
+                    }`}
+                    placeholder="Seu e-mail"
+                    placeholderTextColor="#9CA3AF"
+                    value={value}
+                    onChangeText={onChange}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    autoComplete="email"
+                    returnKeyType="next"
+                    submitBehavior="blurAndSubmit"
+                  />
+                )}
               />
+              {errors.email && (
+                <Text className="text-red-500 mb-4">
+                  {errors.email.message}
+                </Text>
+              )}
 
               <Text className="text-base font-rregular text-gray-600 mb-2">
                 Senha
               </Text>
-              <View className="relative mb-6">
-                <TextInput
-                  className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200"
-                  placeholder="Sua senha"
-                  placeholderTextColor="#9CA3AF"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoComplete="password"
-                  returnKeyType="done"
-                  onSubmitEditing={handleLogin}
-                />
-                <TouchableOpacity
-                  className="absolute right-4 top-0 h-14 justify-center items-center"
-                  onPress={() => setShowPassword(!showPassword)}
-                  activeOpacity={0.7}
-                  style={{ width: 40, height: 56 }}
-                >
-                  <MaterialCommunityIcons
-                    name={showPassword ? "eye-off" : "eye"}
-                    size={24}
-                    color="#9CA3AF"
-                  />
-                </TouchableOpacity>
-              </View>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, value } }) => (
+                  <View className={`relative ${errors.password ? "mb-2" : "mb-6"}`}>
+                    <TextInput
+                      className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200"
+                      placeholder="Sua senha"
+                      placeholderTextColor="#9CA3AF"
+                      value={value}
+                      onChangeText={onChange}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      autoComplete="password"
+                      returnKeyType="done"
+                      onSubmitEditing={handleSubmit(onSubmit)}
+                    />
+                    <TouchableOpacity
+                      className="absolute right-4 top-0 h-14 justify-center items-center"
+                      onPress={() => setShowPassword(!showPassword)}
+                      activeOpacity={0.7}
+                      style={{ width: 40, height: 56 }}
+                    >
+                      <MaterialCommunityIcons
+                        name={showPassword ? "eye-off" : "eye"}
+                        size={24}
+                        color="#9CA3AF"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+              {errors.password && (
+                <Text className="text-red-500 mb-6">
+                  {errors.password.message}
+                </Text>
+              )}
 
               <Pressable
-                disabled={!email.trim() || !password.trim()}
+                disabled={!isValid}
                 className={`w-full h-14 mb-6 ${
-                  !email.trim() || !password.trim()
-                    ? "bg-grayish"
-                    : "bg-secondary"
-                } rounded-2xl justify-center items-center ${
-                  !email.trim() || !password.trim() ? "opacity-50" : ""
-                }`}
-                onPress={handleLogin}
+                  !isValid ? "bg-grayish opacity-50" : "bg-secondary"
+                } rounded-2xl justify-center items-center`}
+                onPress={handleSubmit(onSubmit)}
               >
                 <Text className="text-white text-lg font-rsemi">Entrar</Text>
               </Pressable>

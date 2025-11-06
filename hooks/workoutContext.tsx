@@ -6,15 +6,15 @@ interface WorkoutProps {
 }
 
 interface IWorkoutContextData {
-    saveWorkout: Array<ISaveWorkout>,
-    setSaveWorkout: Dispatch<SetStateAction<Array<ISaveWorkout>>>
+    saveWorkout: ISaveWorkout[],
+    setSaveWorkout: Dispatch<SetStateAction<ISaveWorkout[]>>
 }
 
 const WorkoutContextData = createContext<IWorkoutContextData>({} as IWorkoutContextData)
 
 export function WorkoutContextProvider({ children }: WorkoutProps) {
 
-    const [saveWorkout, setSaveWorkout] = useState<Array<ISaveWorkout>>([])
+    const [saveWorkout, setSaveWorkout] = useState<ISaveWorkout[]>([])
 
     return (
         <WorkoutContextData.Provider value={{

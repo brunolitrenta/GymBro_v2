@@ -1,10 +1,8 @@
-import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, SafeAreaView  } from "react-native";
 
 const Progress = () => {
   return (
     <SafeAreaView
-      edges={["top"]}
       className="flex-1 items-center justify-center bg-primary"
     >
       <Text className="text-3xl font-rregular">Progresso</Text>

@@ -1,4 +1,7 @@
 import { View, Text, Pressable, Alert } from 'react-native'
+import { StatusBar, setStatusBarStyle } from 'expo-status-bar'
+import { useFocusEffect } from '@react-navigation/native'
+import { useCallback } from 'react'
 import React from 'react'
 import { router, useLocalSearchParams } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -22,15 +25,23 @@ const AddWorkoutModal = () => {
 
     function deleteWorkout() {
 
-        const currentWorkout = saveWorkout.find(wk => wk.label == label);
+    const currentWorkout = saveWorkout.find(wk => wk.label === label);
 
-        setSaveWorkout(saveWorkout.filter(wk => wk != currentWorkout));
+    setSaveWorkout(saveWorkout.filter(wk => wk !== currentWorkout));
 
-        router.navigate('workoutPlan');
+        router.navigate('/workoutPlan');
     };
 
+    useFocusEffect(
+        useCallback(() => {
+            setStatusBarStyle('light');
+            return () => setStatusBarStyle('auto');
+        }, [])
+    );
+
     return (
-        <View className='flex-1 justify-center items-center'>
+        <View className='flex-1 justify-center items-center' style={{ backgroundColor: 'transparent' }}>
+            <StatusBar translucent backgroundColor="transparent" style="light" />
             <Pressable android_disableSound onPress={() => router.back()} className='h-full w-full fixed'></Pressable>
             <View className='w-1/2 h-1/4 bg-primary rounded-3xl absolute top-[10%] left-[45%] items-center justify-evenly shadow-lg shadow-stone-950'>
                 <Pressable className='flex-row w-full h-1/2 justify-around items-center rounded-t-2xl active:bg-grayish'>

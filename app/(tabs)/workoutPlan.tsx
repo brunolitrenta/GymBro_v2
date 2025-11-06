@@ -6,9 +6,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  SafeAreaView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { weekDays } from "@/constants/weekDays";
+import { weekDays } from "@/constants/Calendar";
 import { useWorkout } from "@/hooks/workoutContext";
 import { ISaveWorkout } from "@/interfaces/ISaveWorkout";
 
@@ -55,10 +55,7 @@ const WorkoutPlan = () => {
   }
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      className="flex-1 items-center justify-evenly bg-primary"
-    >
+    <SafeAreaView className="flex-1 items-center justify-evenly bg-primary">
       <View className="flex-row w-5/6 justify-between items-center">
         <TouchableOpacity
           className="h-12 w-10 items-center justify-center"
@@ -103,12 +100,12 @@ const WorkoutPlan = () => {
       </Link>
       <View
         className={
-          saveWorkout.length == 0
+          saveWorkout.length === 0
             ? "w-11/12 h-2/4 items-center"
             : "w-11/12 h-2/4"
         }
       >
-        {saveWorkout.length == 0 ? (
+        {saveWorkout.length === 0 ? (
           <View className="w-5/6 h-full justify-center items-center">
             <Text className="text-secondary font-rbold ml-2 text-base text-center">
               Você não possui nenhum treino, adicione um clicando no + no canto

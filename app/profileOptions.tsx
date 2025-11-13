@@ -10,47 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   Keyboard,
 } from "react-native";
+import CustomAlert from "./modals/customAlert";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { router } from "expo-router";
-
-// Schema de validação para dados pessoais
-const personalDataSchema = z.object({
-  name: z.string().min(2, "Nome obrigatório"),
-  email: z.string().email("E-mail inválido").nonempty("E-mail obrigatório"),
-  height: z
-    .union([
-      z.number().min(1, { message: "Altura deve ser maior que 0" }),
-      z.string().refine(
-        (val) => {
-          if (val === "") return false;
-          const num = parseFloat(val);
-          return !isNaN(num) && num > 0;
-        },
-        { message: "Altura deve ser maior que 0" }
-      ),
-    ]),
-  weight: z
-    .union([
-      z.number().min(1, { message: "Peso deve ser maior que 0" }),
-      z.string().refine(
-        (val) => {
-          if (val === "") return false;
-          const num = parseFloat(val);
-          return !isNaN(num) && num > 0;
-        },
-        { message: "Peso deve ser maior que 0" }
-      ),
-    ]),
-  goal: z.enum(["weight_loss", "muscle_gain", "other"], {
-    message: "Selecione um objetivo",
-  }),
-  workoutDays: z.array(z.number().min(0).max(6)).min(1, "Selecione pelo menos um dia"),
-  medical: z.string().max(200, "Máximo 200 caracteres").optional(),
-});
+import { personalDataSchema } from "@/types/user";
 
 type PersonalDataForm = z.infer<typeof personalDataSchema>;
 
@@ -97,6 +63,10 @@ const ProfileOptions = () => {
     };
   }, []);
 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
+
   const focusInput = (inputKey: string) => {
     setTimeout(() => {
       inputRefs.current[inputKey]?.focus();
@@ -107,21 +77,15 @@ const ProfileOptions = () => {
     try {
       // Aqui você pode fazer a chamada à API para salvar os dados
       console.log("Dados a serem salvos:", data);
-      
-      Alert.alert("Sucesso", "Dados pessoais salvos com sucesso!", [
-        {
-          text: "Ok",
-          onPress: () => router.back(),
-        },
-      ]);
+
+      setAlertTitle("Sucesso");
+      setAlertMessage("Dados pessoais salvos com sucesso!");
+      setAlertVisible(true);
     } catch (error) {
       console.error("Erro ao salvar dados:", error);
-      Alert.alert("Erro", "Não foi possível salvar os dados pessoais", [
-        {
-          text: "Ok",
-          style: "destructive",
-        },
-      ]);
+      setAlertTitle("Erro");
+      setAlertMessage("Não foi possível salvar os dados pessoais");
+      setAlertVisible(true);
     }
   };
 
@@ -134,15 +98,23 @@ const ProfileOptions = () => {
   const weekDays = ["D", "S", "T", "Q", "Q", "S", "S"];
 
   return (
-    <SafeAreaView className="flex-1 bg-primary">
+    <SafeAreaView className="flex-1 bg-primary p-6">
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
         style={{ flex: 1 }}
       >
-        {/* Header */}
-        <View className="flex-row w-full justify-between items-center px-6 py-4">
-          <Pressable onPress={() => router.back()} className="h-12 w-10 items-center justify-center">
+        <View className="flex-row w-full justify-between items-center">
+          <Pressable
+            onPress={() => router.back()}
+            className="h-12 w-10 items-center justify-center"
+          >
             <FontAwesome6 name="arrow-left" size={32} color="black" />
           </Pressable>
           <Text className="font-rbold text-3xl color-textcolor">
@@ -153,12 +125,7 @@ const ProfileOptions = () => {
 
         <ScrollView
           ref={scrollViewRef}
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingHorizontal: 24,
-            paddingTop: 20,
-            paddingBottom: keyboardVisible ? 300 : 80,
-          }}
+          className={["mt-4 grow"] + (keyboardVisible ? "pb-[300px]" : "pb-[80px]")}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -191,11 +158,15 @@ const ProfileOptions = () => {
             )}
           />
           {errors.name && (
-            <Text className="text-red-500 mb-3 text-sm">{errors.name.message}</Text>
+            <Text className="text-red-500 mb-3 text-sm">
+              {errors.name.message}
+            </Text>
           )}
 
           {/* E-mail */}
-          <Text className="text-sm font-rregular text-gray-600 mb-1">E-mail</Text>
+          <Text className="text-sm font-rregular text-gray-600 mb-1">
+            E-mail
+          </Text>
           <Controller
             control={control}
             name="email"
@@ -222,11 +193,15 @@ const ProfileOptions = () => {
             )}
           />
           {errors.email && (
-            <Text className="text-red-500 mb-3 text-sm">{errors.email.message}</Text>
+            <Text className="text-red-500 mb-3 text-sm">
+              {errors.email.message}
+            </Text>
           )}
 
           {/* Altura */}
-          <Text className="text-sm font-rregular text-gray-600 mb-1">Altura (cm)</Text>
+          <Text className="text-sm font-rregular text-gray-600 mb-1">
+            Altura (cm)
+          </Text>
           <Controller
             control={control}
             name="height"
@@ -270,11 +245,15 @@ const ProfileOptions = () => {
             )}
           />
           {errors.height && (
-            <Text className="text-red-500 mb-3 text-sm">{errors.height.message}</Text>
+            <Text className="text-red-500 mb-3 text-sm">
+              {errors.height.message}
+            </Text>
           )}
 
           {/* Peso */}
-          <Text className="text-sm font-rregular text-gray-600 mb-1">Peso (kg)</Text>
+          <Text className="text-sm font-rregular text-gray-600 mb-1">
+            Peso (kg)
+          </Text>
           <Controller
             control={control}
             name="weight"
@@ -318,16 +297,22 @@ const ProfileOptions = () => {
             )}
           />
           {errors.weight && (
-            <Text className="text-red-500 mb-3 text-sm">{errors.weight.message}</Text>
+            <Text className="text-red-500 mb-3 text-sm">
+              {errors.weight.message}
+            </Text>
           )}
 
           {/* Objetivo */}
-          <Text className="text-sm font-rregular text-gray-600 mb-1">Objetivo</Text>
+          <Text className="text-sm font-rregular text-gray-600 mb-1">
+            Objetivo
+          </Text>
           <Controller
             control={control}
             name="goal"
             render={({ field: { value, onChange } }) => (
-              <View className={`flex flex-col ${errors.goal ? "mb-2" : "mb-3"}`}>
+              <View
+                className={`flex flex-col ${errors.goal ? "mb-2" : "mb-3"}`}
+              >
                 {goalOptions.map((option) => (
                   <Pressable
                     key={option.value}
@@ -351,7 +336,9 @@ const ProfileOptions = () => {
             )}
           />
           {errors.goal && (
-            <Text className="text-red-500 mb-3 text-sm">{errors.goal.message}</Text>
+            <Text className="text-red-500 mb-3 text-sm">
+              {errors.goal.message}
+            </Text>
           )}
 
           {/* Dias de treino */}

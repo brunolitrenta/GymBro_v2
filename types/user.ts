@@ -61,3 +61,37 @@ export const loginSchema = z.object({
   email: z.string().min(1, "E-mail obrigatório").email("E-mail inválido"),
   password: z.string().min(1, "Senha obrigatória").min(6, "Mínimo 6 caracteres"),
 });
+
+export const personalDataSchema = z.object({
+  name: z.string().min(2, "Nome obrigatório"),
+  email: z.string().email("E-mail inválido").nonempty("E-mail obrigatório"),
+  height: z
+    .union([
+      z.number().min(1, { message: "Altura deve ser maior que 0" }),
+      z.string().refine(
+        (val) => {
+          if (val === "") return false;
+          const num = parseFloat(val);
+          return !isNaN(num) && num > 0;
+        },
+        { message: "Altura deve ser maior que 0" }
+      ),
+    ]),
+  weight: z
+    .union([
+      z.number().min(1, { message: "Peso deve ser maior que 0" }),
+      z.string().refine(
+        (val) => {
+          if (val === "") return false;
+          const num = parseFloat(val);
+          return !isNaN(num) && num > 0;
+        },
+        { message: "Peso deve ser maior que 0" }
+      ),
+    ]),
+  goal: z.enum(["weight_loss", "muscle_gain", "other"], {
+    message: "Selecione um objetivo",
+  }),
+  workoutDays: z.array(z.number().min(0).max(6)).min(1, "Selecione pelo menos um dia"),
+  medical: z.string().max(200, "Máximo 200 caracteres").optional(),
+});

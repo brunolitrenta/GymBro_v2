@@ -11,7 +11,7 @@ const Index = () => {
       if (isLoggedIn) {
         router.replace('/(tabs)');
       } else {
-        router.replace('/login');
+        router.replace('/user/login');
       }
     }
   }, [isLoggedIn, isLoading]);

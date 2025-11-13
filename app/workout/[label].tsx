@@ -4,8 +4,8 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
-  SafeAreaView
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useState } from "react";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { Entypo, FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
@@ -18,9 +18,13 @@ const DynamicWorkout = () => {
     exercises: string;
   }>();
 
-  const parsedExercises: number[] = JSON.parse(exercises!);
+  const parsedExercises: number[] = exercises && exercises !== 'undefined' 
+    ? JSON.parse(exercises) 
+    : [];
 
-  const [exercisesCompleted, setExercisesCompleted] = useState<(number | string)[]>([]);
+  const [exercisesCompleted, setExercisesCompleted] = useState<
+    (number | string)[]
+  >([]);
 
   function filterExercises() {
     return workoutData.filter((wk) => parsedExercises?.includes(wk.id));
@@ -68,7 +72,8 @@ const DynamicWorkout = () => {
 
   return (
     <SafeAreaView
-      className="flex-1 flex-column justify-evenly items-center bg-primary"
+      edges={["top"]}
+      className="flex-1 flex-column justify-evenly items-center pt-6 bg-primary"
     >
       <View className="flex-row w-5/6 h-8 justify-between items-center">
         <TouchableOpacity
@@ -81,7 +86,7 @@ const DynamicWorkout = () => {
         <Link
           asChild
           href={{
-            pathname: "/modals/workoutOptionsModal",
+            pathname: "/modals/workoutOptions",
             params: { label: label },
           }}
         >

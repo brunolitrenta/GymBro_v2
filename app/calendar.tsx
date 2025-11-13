@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, TouchableOpacity, SafeAreaView } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { months, weekDays } from "../constants/Calendar";
 import { FontAwesome, FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -89,8 +90,8 @@ const Calendario = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white items-center gap-[10%] p-4">
-      <View className="flex-row w-11/12 h-8 justify-between  mt-[10%] items-center">
+    <SafeAreaView edges={["top"]} className="flex-1 bg-white items-center gap-[10%] py-6 px-4">
+      <View className="flex-row w-11/12 justify-between items-center">
         <TouchableOpacity
           className="h-12 w-10 items-center justify-center"
           onPress={() => router.back()}
@@ -98,7 +99,7 @@ const Calendario = () => {
           <FontAwesome6 name="arrow-left" size={32} color="black" />
         </TouchableOpacity>
         <Text className="font-rbold text-3xl">Calendário</Text>
-        <FontAwesome5 name="calendar-alt" size={32} color="black" />
+        <FontAwesome6 name="calendar-days" size={32} color="black" />
       </View>
       <View className="flex-row w-11/12 justify-evenly">
         <View className="items-center">

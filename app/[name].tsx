@@ -1,21 +1,42 @@
-import { AntDesign, FontAwesome6 } from "@expo/vector-icons";
-import { Link, router } from "expo-router";
+import { AntDesign, Entypo, FontAwesome6 } from "@expo/vector-icons";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import {
   FlatList,
   Pressable,
   Text,
   TouchableOpacity,
   View,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { weekDays } from "@/constants/Calendar";
 import { useWorkout } from "@/hooks/workoutContext";
 import { ISaveWorkout } from "@/interfaces/ISaveWorkout";
+import { useMemo } from "react";
 
 const WorkoutPlan = () => {
   const dayWeek = new Date().getDay();
+  const params = useLocalSearchParams();
 
   const { saveWorkout } = useWorkout();
+
+  // Recebe os parâmetros passados pela navegação
+  const planId = params.id as string;
+  const planName = params.name as string;
+  const planWorkouts = useMemo(() => {
+    if (params.workouts && params.workouts !== "undefined") {
+      try {
+        return JSON.parse(params.workouts as string);
+      } catch (error) {
+        console.error("Erro ao fazer parse dos workouts:", error);
+        return [];
+      }
+    }
+    return [];
+  }, [params.workouts]);
+
+  // Usa os workouts do plano se foram passados, senão usa os do contexto
+  const workoutsToDisplay =
+    planWorkouts.length > 0 ? planWorkouts : saveWorkout;
 
   function renderWorkout({ item }: { item: ISaveWorkout }) {
     return (
@@ -55,7 +76,10 @@ const WorkoutPlan = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 items-center justify-evenly bg-primary">
+    <SafeAreaView
+      edges={["top"]}
+      className="flex-1 items-center gap-6 pt-6 bg-primary"
+    >
       <View className="flex-row w-5/6 justify-between items-center">
         <TouchableOpacity
           className="h-12 w-10 items-center justify-center"
@@ -63,10 +87,21 @@ const WorkoutPlan = () => {
         >
           <FontAwesome6 name="arrow-left" size={32} color="textcolor" />
         </TouchableOpacity>
-        <Text className="font-rbold text-3xl color-textcolor">Treinos</Text>
-        <Link asChild href="/modals/addWorkoutModal">
+        <Text className="font-rbold text-3xl color-textcolor">
+          {planName || "Treinos"}
+        </Text>
+        <Link
+          asChild
+          href={{
+            pathname: "/modals/planOptions",
+            params: {
+              planId: planId,
+              planName: planName,
+            },
+          }}
+        >
           <TouchableOpacity className="h-12 w-12 items-center justify-center">
-            <AntDesign name="pluscircle" size={40} color="#A3A65B" />
+            <Entypo name="dots-three-vertical" size={24} color="black" />
           </TouchableOpacity>
         </Link>
       </View>
@@ -98,32 +133,50 @@ const WorkoutPlan = () => {
           </View>
         </Pressable>
       </Link>
-      <View
-        className={
-          saveWorkout.length === 0
-            ? "w-11/12 h-2/4 items-center"
-            : "w-11/12 h-2/4"
-        }
-      >
-        {saveWorkout.length === 0 ? (
-          <View className="w-5/6 h-full justify-center items-center">
-            <Text className="text-secondary font-rbold ml-2 text-base text-center">
-              Você não possui nenhum treino, adicione um clicando no + no canto
-              superior direito.
+      <View className="w-11/12 flex-1 pb-6">
+        {workoutsToDisplay.length === 0 ? (
+          <View className="w-full h-full justify-center items-center">
+            <Text className="text-secondary font-rbold ml-2 text-base text-center mb-6">
+              Você não possui nenhum treino, adicione um clicando no botão
+              abaixo.
             </Text>
+            <Link asChild href="/modals/createWorkout">
+              <TouchableOpacity className="items-center justify-center">
+                <View>
+                  <FontAwesome6 name="circle-plus" size={50} color="#D5D962" />
+                </View>
+              </TouchableOpacity>
+            </Link>
           </View>
         ) : (
-          <Text className="text-darkgreen font-rbold ml-5 mb-3 text-base">
-            Plano de treinos atual
-          </Text>
+          <View className="flex-1">
+            <Text className="text-darkgreen font-rbold ml-5 mb-3 text-base">
+              Plano de treinos atual
+            </Text>
+            <View className="flex-1 w-full items-center">
+              <FlatList
+                data={workoutsToDisplay}
+                renderItem={renderWorkout}
+                keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+            <View className="w-full items-center pt-4">
+              <Link asChild href="/modals/createWorkout">
+                <TouchableOpacity className="items-center justify-center">
+                  <View className="shadow-lg rounded-full">
+                    <FontAwesome6
+                      name="circle-plus"
+                      size={50}
+                      color="#D5D962"
+                    />
+                  </View>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </View>
         )}
-        <View className="w-full h-full items-center">
-          <FlatList
-            data={saveWorkout}
-            renderItem={renderWorkout}
-            keyExtractor={(item, index) => index.toString()}
-          />
-        </View>
       </View>
     </SafeAreaView>
   );

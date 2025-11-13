@@ -13,7 +13,6 @@ import {
   TouchableOpacity,
   Keyboard,
   Dimensions,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -21,6 +20,8 @@ import { router } from "expo-router";
 import { registerSchema } from "@/types/user";
 import api from "@/utils/axiosConfig";
 import { weekDays } from "@/constants/Calendar";
+import { useLoading } from "@/hooks/loadingContext";
+import CustomAlert from "../modals/customAlert";
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -31,6 +32,10 @@ const Register = () => {
   const [screenHeight, setScreenHeight] = useState(
     Dimensions.get("window").height
   );
+  const { isLoading } = useLoading();
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
   const scrollViewRef = React.useRef<ScrollView>(null);
   const inputRefs = React.useRef<{ [key: string]: TextInput | null }>({});
   const {
@@ -102,7 +107,7 @@ const Register = () => {
       });
 
       console.log("Resposta do registro:", res.data);
-      router.replace("/login");
+      router.replace("/user/login");
     } catch (error: unknown) {
       console.error("Erro ao registrar usuário:", error);
       const err = error as any;
@@ -129,17 +134,20 @@ const Register = () => {
         message = err.message;
       }
 
-      Alert.alert("Erro", message, [
-        {
-          text: "Ok",
-          style: "destructive",
-        },
-      ]);
+      setAlertTitle("Erro");
+      setAlertMessage(message);
+      setAlertVisible(true);
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-primary">
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
@@ -208,6 +216,7 @@ const Register = () => {
                     multiline={false}
                     numberOfLines={1}
                     onSubmitEditing={() => focusInput("birthDate")}
+                    editable={!isLoading}
                   />
                 )}
               />
@@ -228,6 +237,7 @@ const Register = () => {
                     }`}
                   >
                     <Pressable
+                      disabled={isLoading}
                       className={`flex-1 h-12 rounded-2xl border ${
                         value === "common"
                           ? "bg-lightgreen border-lightgreen"
@@ -244,6 +254,7 @@ const Register = () => {
                       </Text>
                     </Pressable>
                     <Pressable
+                      disabled={isLoading}
                       className={`flex-1 h-12 rounded-2xl border ${
                         value === "trainer"
                           ? "bg-lightgreen border-lightgreen"
@@ -293,6 +304,7 @@ const Register = () => {
                     multiline={false}
                     numberOfLines={1}
                     onSubmitEditing={() => focusInput("password")}
+                    editable={!isLoading}
                   />
                 )}
               />
@@ -326,12 +338,14 @@ const Register = () => {
                       multiline={false}
                       numberOfLines={1}
                       onSubmitEditing={() => focusInput("confirmPassword")}
+                      editable={!isLoading}
                     />
                     <TouchableOpacity
                       className="absolute right-3 top-0 h-12 justify-center items-center"
                       onPress={() => setShowPassword(!showPassword)}
                       activeOpacity={0.7}
                       style={{ width: 36, height: 48 }}
+                      disabled={isLoading}
                     >
                       <MaterialCommunityIcons
                         name={showPassword ? "eye-off" : "eye"}
@@ -378,6 +392,7 @@ const Register = () => {
                       multiline={false}
                       numberOfLines={1}
                       onSubmitEditing={() => Keyboard.dismiss()}
+                      editable={!isLoading}
                     />
                     <TouchableOpacity
                       className="absolute right-3 top-0 h-12 justify-center items-center"
@@ -386,6 +401,7 @@ const Register = () => {
                       }
                       activeOpacity={0.7}
                       style={{ width: 36, height: 48 }}
+                      disabled={isLoading}
                     >
                       <MaterialCommunityIcons
                         name={showConfirmPassword ? "eye-off" : "eye"}
@@ -422,6 +438,7 @@ const Register = () => {
                     }`}
                   >
                     <Pressable
+                      disabled={isLoading}
                       className={`flex-1 h-10 rounded-2xl border ${
                         value === "M"
                           ? "bg-lightgreen border-lightgreen"
@@ -438,6 +455,7 @@ const Register = () => {
                       </Text>
                     </Pressable>
                     <Pressable
+                      disabled={isLoading}
                       className={`flex-1 h-10 rounded-2xl border ${
                         value === "F"
                           ? "bg-lightgreen border-lightgreen"
@@ -454,6 +472,7 @@ const Register = () => {
                       </Text>
                     </Pressable>
                     <Pressable
+                      disabled={isLoading}
                       className={`flex-1 h-10 rounded-2xl border ${
                         value === "O"
                           ? "bg-lightgreen border-lightgreen"
@@ -517,6 +536,7 @@ const Register = () => {
                       multiline={false}
                       numberOfLines={1}
                       onSubmitEditing={() => focusInput("weight")}
+                      editable={!isLoading}
                     />
                   );
                 }}
@@ -569,6 +589,7 @@ const Register = () => {
                     multiline={false}
                     numberOfLines={1}
                     onSubmitEditing={() => focusInput("height")}
+                    editable={!isLoading}
                   />
                 )}
               />
@@ -620,6 +641,7 @@ const Register = () => {
                     multiline={false}
                     numberOfLines={1}
                     onSubmitEditing={() => focusInput("medical")}
+                    editable={!isLoading}
                   />
                 )}
               />
@@ -640,6 +662,7 @@ const Register = () => {
                     className={`flex flex-col ${errors.goal ? "mb-2" : "mb-3"}`}
                   >
                     <Pressable
+                      disabled={isLoading}
                       className={`w-full h-12 rounded-2xl border ${
                         value === "weight_loss"
                           ? "bg-lightgreen border-lightgreen"
@@ -658,6 +681,7 @@ const Register = () => {
                       </Text>
                     </Pressable>
                     <Pressable
+                      disabled={isLoading}
                       className={`w-full h-12 rounded-2xl border ${
                         value === "muscle_gain"
                           ? "bg-lightgreen border-lightgreen"
@@ -676,6 +700,7 @@ const Register = () => {
                       </Text>
                     </Pressable>
                     <Pressable
+                      disabled={isLoading}
                       className={`w-full h-12 rounded-2xl border ${
                         value === "other"
                           ? "bg-lightgreen border-lightgreen"
@@ -712,6 +737,7 @@ const Register = () => {
                         return (
                           <Pressable
                             key={index}
+                            disabled={isLoading}
                             className={`flex-1 h-12 rounded-2xl border mx-0.5 ${
                               isSelected
                                 ? "bg-lightgreen border-lightgreen"
@@ -767,6 +793,7 @@ const Register = () => {
                     maxLength={200}
                     returnKeyType="next"
                     onSubmitEditing={() => focusInput("email")}
+                    editable={!isLoading}
                   />
                 )}
               />
@@ -777,14 +804,14 @@ const Register = () => {
               )}
 
               <Pressable
-                disabled={!isValid}
+                disabled={!isValid || isLoading}
                 className={`w-full h-12 mb-4 ${
-                  !isValid ? "bg-grayish opacity-50" : "bg-secondary"
+                  !isValid || isLoading ? "bg-grayish opacity-50" : "bg-secondary"
                 } rounded-2xl justify-center items-center`}
                 onPress={handleSubmit(onSubmit)}
               >
                 <Text className="text-white text-base font-rsemi">
-                  Registrar
+                  {isLoading ? "Registrando..." : "Registrar"}
                 </Text>
               </Pressable>
             </View>
@@ -801,7 +828,7 @@ const Register = () => {
             Já possui conta?{" "}
             <Text
               className="text-xs font-rsemi text-lightgreen"
-              onPress={() => router.push("/login")}
+              onPress={() => router.push("/user/login")}
             >
               Entrar
             </Text>

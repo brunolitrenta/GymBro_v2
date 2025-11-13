@@ -4,9 +4,8 @@ import {
   Pressable,
   TouchableOpacity,
   FlatList,
-  Alert,
 } from "react-native";
-import { StatusBar, setStatusBarStyle } from "expo-status-bar";
+import { setStatusBarStyle } from "expo-status-bar";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
@@ -17,8 +16,9 @@ import { workoutData } from "@/datasets/exercises";
 import { ISaveWorkout } from "@/interfaces/ISaveWorkout";
 import { useWorkout } from "@/hooks/workoutContext";
 import { IExercise } from "@/interfaces/IExercise";
+import CustomAlert from "./customAlert";
 
-const AddWorkoutModal = () => {
+const CreateWorkout = () => {
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
   const [bodyAreaSelected, setBodyAreaSelected] = useState<string | null>(null);
@@ -26,6 +26,10 @@ const AddWorkoutModal = () => {
   const [selectedId, setSelectedId] = useState<number[]>([]);
 
   const [buttonsDisabled, setButtonsDisabled] = useState<string[]>([]);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
 
   const { saveWorkout, setSaveWorkout } = useWorkout();
 
@@ -38,31 +42,37 @@ const AddWorkoutModal = () => {
   };
 
   function filterData() {
-  const filteredData = workoutData.filter((ex) => ex.bp === bodyAreaSelected);
+    const filteredData = workoutData.filter((ex) => ex.bp === bodyAreaSelected);
 
     return filteredData;
   }
 
   function getMuscle(id: number) {
-  const exercise = workoutData.find((ex) => ex.id === id);
+    const exercise = workoutData.find((ex) => ex.id === id);
     return exercise ? exercise.bp : "Não Encontrado";
   }
 
+  function showAlert(title: string, message: string) {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  }
+
   function addWorkout() {
-  if (!selectedLabel && selectedId.length === 0) {
-      Alert.alert(
+    if (!selectedLabel && selectedId.length === 0) {
+      showAlert(
         "Atenção",
         "Você precisa preencher todos as informações do seu novo treino."
       );
       return;
-  } else if (selectedId.length === 0) {
-      Alert.alert(
+    } else if (selectedId.length === 0) {
+      showAlert(
         "Atenção",
         "Você precisa selecionar os exercícios desejados."
       );
       return;
     } else if (!selectedLabel) {
-      Alert.alert("Atenção", "Você precisa escolher uma etiqueta.");
+      showAlert("Atenção", "Você precisa escolher uma etiqueta.");
       return;
     }
 
@@ -85,7 +95,7 @@ const AddWorkoutModal = () => {
   }, [saveWorkout]);
 
   function renderExercise({ item }: { item: IExercise }) {
-  const foundId = selectedId.find((id) => id === item.id);
+    const foundId = selectedId.find((id) => id === item.id);
 
     return (
       <View className="w-full h-11/12 bg-lightgreen rounded-2xl p-3 mb-3 flex-row justify-between">
@@ -129,8 +139,16 @@ const AddWorkoutModal = () => {
   );
 
   return (
-    <View className="flex-1 justify-center items-center" style={{ backgroundColor: "transparent" }}>
-  <StatusBar translucent backgroundColor="transparent" style="light" />
+    <View
+      className="flex-1 justify-center items-center"
+      style={{ backgroundColor: "transparent" }}
+    >
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
       <Pressable
         android_disableSound
         onPress={() => router.back()}
@@ -238,4 +256,4 @@ const AddWorkoutModal = () => {
   );
 };
 
-export default AddWorkoutModal;
+export default CreateWorkout;

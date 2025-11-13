@@ -1,31 +1,15 @@
-import { SafeAreaView, Text, View, Pressable, Alert } from "react-native";
+import { Text, View, Pressable } from "react-native";
 import { MaterialCommunityIcons, FontAwesome6 } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/authContext";
-import { Link, router } from "expo-router";
+import { Link } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
-  const { userName, userType, logout } = useAuth();
-
-  const handleLogout = () => {
-    Alert.alert("Sair", "Tem certeza que deseja sair?", [
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
-      {
-        text: "Sair",
-        style: "destructive",
-        onPress: async () => {
-          await logout();
-          router.replace("/login");
-        },
-      },
-    ]);
-  };
+  const { userName, userType } = useAuth();
 
   return (
-    <SafeAreaView className="flex-1 bg-primary px-6 pt-6">
-      <View className="items-center mt-8 mb-12">
+    <SafeAreaView edges={["top"]} className="flex-1 bg-primary pt-6 px-6">
+      <View className="items-center mb-12">
         <Text className="text-3xl font-rbold text-textcolor mb-2">Perfil</Text>
       </View>
 
@@ -35,7 +19,7 @@ const Profile = () => {
         </View>
         <Text className="text-2xl font-rsemi text-textcolor">{userName}</Text>
         <Text className="text-base font-rregular text-gray-600">
-          Membro do GymBro
+          {userType === "trainer" ? "Treinador do GymBro" : "Membro do GymBro"}
         </Text>
       </View>
 
@@ -67,24 +51,25 @@ const Profile = () => {
             </Link>
           )}
 
-          <Pressable className="flex-row items-center justify-center gap-4 py-3">
-            <FontAwesome6 name="question-circle" size={18} color="#666" />
-            <Text className="text-base font-rregular text-textcolor flex-1">
-              Ajuda e suporte
-            </Text>
-            <FontAwesome6 name="arrow-right" size={16} color="#666" />
-          </Pressable>
+          <Link asChild href="/help">
+            <Pressable className="flex-row items-center justify-center gap-4 py-3">
+              <FontAwesome6 name="question-circle" size={18} color="#666" />
+              <Text className="text-base font-rregular text-textcolor flex-1">
+                Ajuda e suporte
+              </Text>
+              <FontAwesome6 name="arrow-right" size={16} color="#666" />
+            </Pressable>
+          </Link>
         </View>
 
-        <Pressable
-          className="bg-red-500 rounded-2xl p-4 flex-row items-center justify-center gap-3"
-          onPress={handleLogout}
-        >
-          <FontAwesome6 name="right-from-bracket" size={20} color="white" />
-          <Text className="text-white text-lg font-rsemi leading-5">
-            Sair do aplicativo
-          </Text>
-        </Pressable>
+        <Link asChild href="/modals/logoutConfirmation">
+          <Pressable className="bg-red-500 rounded-2xl p-4 flex-row items-center justify-center gap-3">
+            <FontAwesome6 name="right-from-bracket" size={20} color="white" />
+            <Text className="text-white text-lg font-rsemi leading-5">
+              Sair do aplicativo
+            </Text>
+          </Pressable>
+        </Link>
       </View>
     </SafeAreaView>
   );

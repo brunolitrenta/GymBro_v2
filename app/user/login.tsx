@@ -9,7 +9,6 @@ import {
   Pressable,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ScrollView,
   TouchableOpacity,
   Keyboard,
@@ -18,8 +17,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/authContext";
+import { useLoading } from "@/hooks/loadingContext";
 import { router } from "expo-router";
 import { loginSchema } from "@/types/user";
+import CustomAlert from "../modals/customAlert";
 
 type LoginForm = z.infer<typeof loginSchema>;
 
@@ -30,6 +31,10 @@ const Login = () => {
     Dimensions.get("window").height
   );
   const { login } = useAuth();
+  const { isLoading } = useLoading();
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
   const {
     control,
     handleSubmit,
@@ -73,22 +78,30 @@ const Login = () => {
       await login(data.email.trim(), data.password.trim());
       router.replace("/(tabs)");
     } catch (error) {
-      Alert.alert("Erro", error instanceof Error ? error.message : "Ocorreu um erro inesperado");
+      setAlertTitle("Erro");
+      setAlertMessage(error instanceof Error ? error.message : "Ocorreu um erro inesperado");
+      setAlertVisible(true);
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-primary">
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : undefined}
         style={{ flex: 1 }}
       >
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: keyboardVisible ? "flex-start" : "center",
-            paddingTop: keyboardVisible ? 40 : 0,
+            paddingTop: keyboardVisible ? 25 : 0,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -145,6 +158,7 @@ const Login = () => {
                     autoComplete="email"
                     returnKeyType="next"
                     submitBehavior="blurAndSubmit"
+                    editable={!isLoading}
                   />
                 )}
               />
@@ -173,12 +187,13 @@ const Login = () => {
                       autoComplete="password"
                       returnKeyType="done"
                       onSubmitEditing={handleSubmit(onSubmit)}
+                      editable={!isLoading}
                     />
                     <TouchableOpacity
                       className="absolute right-4 top-0 h-14 justify-center items-center"
                       onPress={() => setShowPassword(!showPassword)}
                       activeOpacity={0.7}
-                      style={{ width: 40, height: 56 }}
+                      disabled={isLoading}
                     >
                       <MaterialCommunityIcons
                         name={showPassword ? "eye-off" : "eye"}
@@ -196,18 +211,23 @@ const Login = () => {
               )}
 
               <Pressable
-                disabled={!isValid}
+                disabled={!isValid || isLoading}
                 className={`w-full h-14 mb-6 ${
-                  !isValid ? "bg-grayish opacity-50" : "bg-secondary"
+                  !isValid || isLoading ? "bg-grayish opacity-50" : "bg-secondary"
                 } rounded-2xl justify-center items-center`}
                 onPress={handleSubmit(onSubmit)}
               >
-                <Text className="text-white text-lg font-rsemi">Entrar</Text>
+                <Text className="text-white text-lg font-rsemi">
+                  {isLoading ? "Entrando..." : "Entrar"}
+                </Text>
               </Pressable>
 
               <View className="flex flex-row justify-start"> 
                 <Text className="text-base font-rregular text-gray-600 mr-2">Não possui conta?</Text>
-                <Pressable onPress={() => router.push("/register")}>
+                <Pressable 
+                  onPress={() => router.push("/user/register")}
+                  disabled={isLoading}
+                >
                   <Text className="text-base font-rsemi text-lightgreen">Registre-se agora</Text>
                 </Pressable>
               </View>

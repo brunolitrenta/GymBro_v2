@@ -80,7 +80,7 @@ export const AuthContextProvider: React.FC<{ children: React.ReactNode }> = ({
         password,
       });
 
-      const { token } = response.data;
+      const { token } = response.data?.data;
 
       const decodedToken = jwtDecode<JwtPayload>(token);
       const userName = decodedToken.username || "";

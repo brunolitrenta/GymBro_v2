@@ -3,20 +3,26 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
-  Alert,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { exerciseFormSchema, ExerciseFormData } from "@/types/exercise";
+import { useLoading } from "@/hooks/loadingContext";
 import api from "@/utils/axiosConfig";
+import CustomAlert from "../modals/customAlert";
 
 const exercisePage = () => {
   const { exercise } = useLocalSearchParams<{ exercise: string }>();
   const parsedExercise = JSON.parse(exercise!);
+  const { isLoading } = useLoading();
+
+  const [alertVisible, setAlertVisible] = React.useState(false);
+  const [alertTitle, setAlertTitle] = React.useState("");
+  const [alertMessage, setAlertMessage] = React.useState("");
 
   const {
     control,
@@ -46,12 +52,9 @@ const exercisePage = () => {
 
       console.log("Exercício finalizado:", res.data);
 
-      Alert.alert("Sucesso", "Exercício finalizado com sucesso!", [
-        {
-          text: "OK",
-          onPress: () => router.back(),
-        },
-      ]);
+      setAlertTitle("Sucesso");
+      setAlertMessage("Exercício finalizado com sucesso!");
+      setAlertVisible(true);
     } catch (error: unknown) {
       console.error("Erro ao finalizar exercício:", error);
       const err = error as any;
@@ -78,17 +81,21 @@ const exercisePage = () => {
         message = err.message;
       }
 
-      Alert.alert("Erro", message, [
-        {
-          text: "Ok",
-          style: "destructive",
-        },
-      ]);
+      setAlertTitle("Erro");
+      setAlertMessage(message);
+      setAlertVisible(true);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 items-center bg-primary px-6 py-4">
+    <SafeAreaView edges={["top"]} className="flex-1 items-center bg-primary p-6">
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+        actions={alertTitle === "Sucesso" ? [{ text: "OK", onPress: () => router.back() }] : undefined}
+      />
       <View className="flex-row w-full h-12 justify-between items-center mb-6">
         <TouchableOpacity
           className="h-12 w-10 items-center justify-center"
@@ -130,6 +137,7 @@ const exercisePage = () => {
                     placeholderTextColor="#999"
                     keyboardType="number-pad"
                     autoComplete="off"
+                    editable={!isLoading}
                   />
                   {errors.reps && (
                     <Text className="text-red-500 text-xs mt-1 text-center">
@@ -162,6 +170,7 @@ const exercisePage = () => {
                     placeholderTextColor="#999"
                     keyboardType="number-pad"
                     autoComplete="off"
+                    editable={!isLoading}
                   />
                   {errors.series && (
                     <Text className="text-red-500 text-xs mt-1 text-center">
@@ -196,6 +205,7 @@ const exercisePage = () => {
                   placeholderTextColor="#999"
                   keyboardType="decimal-pad"
                   autoComplete="off"
+                  editable={!isLoading}
                 />
                 {errors.weight && (
                   <Text className="text-red-500 text-xs mt-1 text-center">
@@ -233,6 +243,7 @@ const exercisePage = () => {
                   onChangeText={onChange}
                   maxLength={500}
                   autoComplete="off"
+                  editable={!isLoading}
                 />
               </View>
               {errors.notes && (
@@ -246,13 +257,15 @@ const exercisePage = () => {
       </View>
 
       <TouchableOpacity
-        disabled={!isValid}
+        disabled={!isValid || isLoading}
         className={`w-full rounded-full py-4 items-center ${
-          !isValid ? "bg-stronggreen opacity-50" : "bg-stronggreen"
+          !isValid || isLoading ? "bg-stronggreen opacity-50" : "bg-stronggreen"
         }`}
         onPress={handleSubmit(onSubmit)}
       >
-        <Text className="font-rbold text-lg">Finalizar exercício</Text>
+        <Text className="font-rbold text-lg">
+          {isLoading ? "Finalizando..." : "Finalizar exercício"}
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

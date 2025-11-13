@@ -1,21 +1,12 @@
 import { View, Text, Pressable, TouchableOpacity } from "react-native";
-import { StatusBar, setStatusBarStyle } from "expo-status-bar";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
+
 import React from "react";
 import { router } from "expo-router";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 
-const CreditsModal = () => {
-  useFocusEffect(
-    useCallback(() => {
-      setStatusBarStyle("light");
-      return () => setStatusBarStyle("auto");
-    }, [])
-  );
+const Credits = () => {
   return (
-    <View className="flex-1 justify-center items-center" style={{ backgroundColor: "transparent" }}>
-  <StatusBar translucent backgroundColor="transparent" style="light" />
+    <View className="flex-1 justify-center items-center bg-transparent">
       <Pressable
         onPress={() => router.back()}
         className="h-full w-full bg-black opacity-50 fixed"
@@ -59,4 +50,4 @@ const CreditsModal = () => {
   );
 };
 
-export default CreditsModal;
+export default Credits;

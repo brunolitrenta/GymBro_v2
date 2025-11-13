@@ -1,4 +1,5 @@
-import { Pressable, Text, View, Image, SafeAreaView } from "react-native";
+import { Pressable, Text, View, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { weekDays } from "@/constants/Calendar";
@@ -9,22 +10,22 @@ const Index = () => {
   const { userName } = useAuth();
 
   return (
-    <SafeAreaView className="flex-1 flex-column items-center justify-evenly bg-primary">
+    <SafeAreaView edges={["top"]} className="flex-1 flex-column items-center gap-10 pt-6 bg-primary">
       <View className="flex-row justify-between w-11/12 h-14 items-center">
         <Text className="text-2xl font-rbold text-textcolor">
           Bem vindo, {userName}!
         </Text>
-        <Link asChild href="/modals/creditsModal">
+        <Link asChild href="/modals/credits">
           <Pressable className="bg-lightgreen w-14 h-14 justify-center items-center rounded-full">
             <MaterialCommunityIcons name="teddy-bear" size={38} color="black" />
           </Pressable>
         </Link>
       </View>
-      <Link asChild href="/workoutPlan">
+      <Link asChild href="/plans">
         <Pressable className="flex-row w-11/12 h-16 justify-evenly items-center bg-secondary rounded-3xl">
           <FontAwesome6 name="dumbbell" size={28} color="white" />
           <Text className="text-white font-rsemi text-2xl">
-            Acessar treinos
+            Meus planos de treino
           </Text>
           <FontAwesome6 name="arrow-right" size={38} color="white" />
         </Pressable>
@@ -65,7 +66,7 @@ const Index = () => {
         </Pressable>
       </Link>
       <Link asChild href="/progress">
-        <Pressable className="w-11/12 h-56">
+        <Pressable className="w-11/12 h-56 bg-primary">
           <View className="h-56 bg-lightgreen rounded-3xl justify-center items-center">
             <Image
               resizeMode="contain"

@@ -126,53 +126,41 @@ const Plans = () => {
           {plans.length > 0 ? (
             <View className="gap-4">
               {plans.map((plan: any) => (
-                <Link
+                <TouchableOpacity
                   key={plan.id}
-                  asChild
-                  href={{
-                    pathname: "/[name]" as any,
-                    params: {
-                      id: plan.id,
-                      name: plan.name,
-                      workouts: JSON.stringify(plan.workouts),
-                    },
-                  }}
+                  className="w-full bg-white rounded-2xl p-6 border-2 border-black/5 shadow-sm"
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/plan/[name]" as any,
+                      params: {
+                        planId: plan.id,
+                        planName: plan.name,
+                      },
+                    })
+                  }
                 >
-                  <TouchableOpacity
-                    className="w-full bg-white rounded-2xl p-5 border-2 border-black/5"
-                    activeOpacity={0.7}
-                  >
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-1 mr-3">
-                        <Text className="font-rbold text-xl text-black mb-2">
-                          {plan.name}
-                        </Text>
-                        <View className="flex-row items-center gap-2">
-                          <View className="flex-row items-center gap-1.5 bg-stronggreen/20 px-3 py-1.5 rounded-full">
-                            <FontAwesome6
-                              name="dumbbell"
-                              size={12}
-                              color="#000"
-                            />
-                            <Text className="font-rsemi text-xs text-black">
-                              {plan.workouts?.length || 0}{" "}
-                              {plan.workouts?.length === 1
-                                ? "treino"
-                                : "treinos"}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                      <View className="bg-stronggreen/30 w-12 h-12 rounded-full items-center justify-center">
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-4 flex-1">
+                      <View className="bg-stronggreen/30 w-14 h-14 rounded-2xl items-center justify-center">
                         <FontAwesome6
-                          name="chevron-right"
-                          size={18}
+                          name="dumbbell"
+                          size={24}
                           color="#000"
                         />
                       </View>
+                      <Text className="font-rbold text-2xl text-black flex-1">
+                        {plan.name}
+                      </Text>
                     </View>
-                  </TouchableOpacity>
-                </Link>
+                    <FontAwesome6
+                      name="chevron-right"
+                      size={20}
+                      color="#000"
+                      style={{ opacity: 0.3 }}
+                    />
+                  </View>
+                </TouchableOpacity>
               ))}
             </View>
           ) : (
@@ -185,7 +173,7 @@ const Plans = () => {
                 Toque no ícone <Text className="font-rsemi">"+"</Text> no canto
                 superior direito para criar seu primeiro plano de treino.
               </Text>
-              <Link asChild href="/modals/createPlan">
+              <Link asChild href="/modals/createPlan" >
                 <TouchableOpacity
                   className="mt-6 flex-row items-center gap-2 bg-stronggreen px-6 py-3 rounded-full"
                   activeOpacity={0.9}

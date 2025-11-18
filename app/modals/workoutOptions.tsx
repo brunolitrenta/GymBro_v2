@@ -2,13 +2,10 @@ import { View, Text, Pressable } from "react-native";
 import React, { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome6 } from "@expo/vector-icons";
-import { useWorkout } from "@/hooks/workoutContext";
 import CustomAlert from "./customAlert";
 
 const WorkoutOptions = () => {
   const { label } = useLocalSearchParams();
-
-  const { saveWorkout, setSaveWorkout } = useWorkout();
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
@@ -16,15 +13,14 @@ const WorkoutOptions = () => {
 
   const confirmRemoval = () => {
     setAlertTitle("Atenção");
-    setAlertMessage("Você tem certeza que deseja excluir este treino? Essa ação será irreversível.");
+    setAlertMessage(
+      "Você tem certeza que deseja excluir este treino? Essa ação será irreversível."
+    );
     setAlertVisible(true);
   };
 
   function deleteWorkout() {
-    const currentWorkout = saveWorkout.find((wk) => wk.label === label);
-
-    setSaveWorkout(saveWorkout.filter((wk) => wk !== currentWorkout));
-
+    // TODO: Implementar lógica de exclusão de treino via API
     router.back();
   }
 
@@ -40,7 +36,11 @@ const WorkoutOptions = () => {
         onClose={() => setAlertVisible(false)}
         actions={[
           { text: "Cancelar", style: "cancel" },
-          { text: "Excluir", onPress: () => deleteWorkout(), style: "destructive" },
+          {
+            text: "Excluir",
+            onPress: () => deleteWorkout(),
+            style: "destructive",
+          },
         ]}
       />
       <Pressable

@@ -49,8 +49,12 @@ api.interceptors.response.use(
     
     const method = response.config.method?.toUpperCase();
     console.log(`✅ ${method} ${response.config.url} - Status: ${response.status}`);
+    
+    // Verifica se a requisição tem flag para suprimir toast
+    const silentSuccess = response.config?.headers?.['X-Silent'] === 'true';
+    
     // Exibir toast somente para operações de escrita (POST, PUT, PATCH, DELETE)
-    if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && !silentSuccess) {
       // Tentar obter mensagem customizada da API
       const msg = (response.data?.message as string) || 'Operação realizada com sucesso';
       toastSuccess(msg);
@@ -64,6 +68,9 @@ api.interceptors.response.use(
     }
     
     console.log('🔍 INTERCEPTOR - Detalhes do erro:');
+
+    // Verifica se a requisição tem flag para suprimir toast
+    const silentError = error.config?.headers?.['X-Silent'] === 'true';
 
     let extractedMessage = 'Erro na requisição';
     if (error.response) {
@@ -86,8 +93,10 @@ api.interceptors.response.use(
       console.log('🚪 Sessão expirada');
       await AsyncStorage.removeItem('authToken');
       await AsyncStorage.removeItem('userName');
-      toastError('Sessão expirada, faça login novamente');
-    } else {
+      if (!silentError) {
+        toastError('Sessão expirada, faça login novamente');
+      }
+    } else if (!silentError) {
       toastError(extractedMessage);
     }
     return Promise.reject(error);

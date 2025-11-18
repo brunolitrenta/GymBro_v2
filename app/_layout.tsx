@@ -2,7 +2,6 @@ import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
-import { WorkoutContextProvider } from "@/hooks/workoutContext";
 import { AuthContextProvider } from "@/hooks/authContext";
 import { LoadingProvider, useLoading } from "@/hooks/loadingContext";
 import { setLoadingHandler } from "@/utils/axiosConfig";
@@ -40,8 +39,7 @@ const RootLayout = () => {
   return (
     <LoadingProvider>
       <AuthContextProvider>
-        <WorkoutContextProvider>
-          <LoadingSetup>
+        <LoadingSetup>
             <StatusBar translucent backgroundColor="transparent" style="auto" />
             <Stack>
               <Stack.Screen
@@ -73,7 +71,7 @@ const RootLayout = () => {
                 }}
               />
               <Stack.Screen
-                name="[name]"
+                name="plan/[name]"
                 options={{
                   headerShown: false,
                   navigationBarHidden: true,
@@ -184,7 +182,6 @@ const RootLayout = () => {
             </Stack>
             <Toast />
           </LoadingSetup>
-        </WorkoutContextProvider>
       </AuthContextProvider>
     </LoadingProvider>
   );

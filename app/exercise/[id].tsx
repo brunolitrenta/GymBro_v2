@@ -1,9 +1,4 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-} from "react-native";
+import { View, Text, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React from "react";
 import { router, useLocalSearchParams } from "expo-router";
@@ -14,11 +9,30 @@ import { exerciseFormSchema, ExerciseFormData } from "@/types/exercise";
 import { useLoading } from "@/hooks/loadingContext";
 import api from "@/utils/axiosConfig";
 import CustomAlert from "../modals/customAlert";
+import { useAuth } from "@/hooks/authContext";
 
 const exercisePage = () => {
-  const { exercise } = useLocalSearchParams<{ exercise: string }>();
+  const {
+    exercise,
+    isWorkoutBlocked,
+    hasActiveSession,
+    sessionId,
+    isCompleted,
+  } = useLocalSearchParams<{
+    exercise: string;
+    isWorkoutBlocked?: string;
+    hasActiveSession?: string;
+    sessionId?: string;
+    isCompleted?: string;
+  }>();
   const parsedExercise = JSON.parse(exercise!);
+  const { userId } = useAuth();
   const { isLoading } = useLoading();
+
+  const workoutBlocked = isWorkoutBlocked === "true";
+  const sessionActive = hasActiveSession === "true";
+  const completed = isCompleted === "true";
+  const isButtonDisabled = workoutBlocked || !sessionActive || completed;
 
   const [alertVisible, setAlertVisible] = React.useState(false);
   const [alertTitle, setAlertTitle] = React.useState("");
@@ -32,31 +46,27 @@ const exercisePage = () => {
     resolver: zodResolver(exerciseFormSchema),
     mode: "onChange",
     defaultValues: {
-      weight: 0,
-      series: 0,
-      reps: 0,
-      notes: "",
+      weight: parsedExercise.weightKg || 0,
+      sets: parsedExercise.sets || 0,
+      reps: parsedExercise.reps || 0,
+      notes: parsedExercise.notes || "",
     },
   });
 
   const onSubmit = async (data: ExerciseFormData) => {
     try {
-      const res = await api.post("/exercises", {
+      await api.post("/workout/session/set", {
         exerciseId: parsedExercise.id,
-        exerciseName: parsedExercise.name,
+        sessionId: sessionId || null,
+        userId,
         weight: data.weight,
-        series: data.series,
+        sets: data.sets,
         reps: data.reps,
-        notes: data.notes || "",
+        notes: data.notes || null,
       });
 
-      console.log("Exercício finalizado:", res.data);
-
-      setAlertTitle("Sucesso");
-      setAlertMessage("Exercício finalizado com sucesso!");
-      setAlertVisible(true);
+      router.back();
     } catch (error: unknown) {
-      console.error("Erro ao finalizar exercício:", error);
       const err = error as any;
       let message = "Erro ao finalizar exercício";
 
@@ -88,13 +98,20 @@ const exercisePage = () => {
   };
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 items-center bg-primary p-6">
+    <SafeAreaView
+      edges={["top"]}
+      className="flex-1 items-center bg-primary p-6"
+    >
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
         message={alertMessage}
         onClose={() => setAlertVisible(false)}
-        actions={alertTitle === "Sucesso" ? [{ text: "OK", onPress: () => router.back() }] : undefined}
+        actions={
+          alertTitle === "Sucesso"
+            ? [{ text: "OK", onPress: () => router.back() }]
+            : undefined
+        }
       />
       <View className="flex-row w-full h-12 justify-between items-center mb-6">
         <TouchableOpacity
@@ -103,8 +120,8 @@ const exercisePage = () => {
         >
           <FontAwesome6 name="arrow-left" size={28} color="black" />
         </TouchableOpacity>
-        <Text className="font-rbold text-2xl text-center flex-1">
-          {parsedExercise.name || "Crucifixo com Halter"}
+        <Text className="font-rbold text-xl text-center flex-1">
+          {parsedExercise.exerciseDef.name || "Crucifixo com Halter"}
         </Text>
         <View className="h-12 w-10" />
       </View>
@@ -133,11 +150,11 @@ const exercisePage = () => {
                       const cleaned = text.replace(/[^0-9]/g, "");
                       onChange(cleaned ? parseInt(cleaned) : 0);
                     }}
-                    placeholder="12"
+                    placeholder="Ex: 12"
                     placeholderTextColor="#999"
                     keyboardType="number-pad"
                     autoComplete="off"
-                    editable={!isLoading}
+                    editable={!isLoading && !isButtonDisabled}
                   />
                   {errors.reps && (
                     <Text className="text-red-500 text-xs mt-1 text-center">
@@ -154,27 +171,27 @@ const exercisePage = () => {
             </Text>
             <Controller
               control={control}
-              name="series"
+              name="sets"
               render={({ field: { onChange, value } }) => (
                 <View className="w-full">
                   <TextInput
                     className={`bg-white border-2 ${
-                      errors.series ? "border-red-500" : "border-gray-300"
+                      errors.sets ? "border-red-500" : "border-gray-300"
                     } rounded-xl px-4 py-3 w-full font-rsemi text-xl text-center`}
                     value={value > 0 ? value.toString() : ""}
                     onChangeText={(text) => {
                       const cleaned = text.replace(/[^0-9]/g, "");
                       onChange(cleaned ? parseInt(cleaned) : 0);
                     }}
-                    placeholder="3"
+                    placeholder="Ex: 3"
                     placeholderTextColor="#999"
                     keyboardType="number-pad"
                     autoComplete="off"
-                    editable={!isLoading}
+                    editable={!isLoading && !isButtonDisabled}
                   />
-                  {errors.series && (
+                  {errors.sets && (
                     <Text className="text-red-500 text-xs mt-1 text-center">
-                      {errors.series.message}
+                      {errors.sets.message}
                     </Text>
                   )}
                 </View>
@@ -197,15 +214,14 @@ const exercisePage = () => {
                   } rounded-xl px-4 py-3 w-full font-rsemi text-xl text-center`}
                   value={value > 0 ? value.toString() : ""}
                   onChangeText={(text) => {
-                    // Permitir apenas números e ponto decimal
                     const cleaned = text.replace(/[^0-9.]/g, "");
                     onChange(cleaned ? parseFloat(cleaned) : 0);
                   }}
-                  placeholder="30"
+                  placeholder="Ex: 30"
                   placeholderTextColor="#999"
                   keyboardType="decimal-pad"
                   autoComplete="off"
-                  editable={!isLoading}
+                  editable={!isLoading && !isButtonDisabled}
                 />
                 {errors.weight && (
                   <Text className="text-red-500 text-xs mt-1 text-center">
@@ -218,7 +234,6 @@ const exercisePage = () => {
         </View>
       </View>
 
-      {/* Anotações */}
       <View className="w-full mb-6">
         <Text className="text-darkgreen font-rbold text-lg mb-2">
           Anotações
@@ -243,7 +258,7 @@ const exercisePage = () => {
                   onChangeText={onChange}
                   maxLength={500}
                   autoComplete="off"
-                  editable={!isLoading}
+                  editable={!isLoading && !isButtonDisabled}
                 />
               </View>
               {errors.notes && (
@@ -256,17 +271,21 @@ const exercisePage = () => {
         />
       </View>
 
-      <TouchableOpacity
-        disabled={!isValid || isLoading}
-        className={`w-full rounded-full py-4 items-center ${
-          !isValid || isLoading ? "bg-stronggreen opacity-50" : "bg-stronggreen"
-        }`}
-        onPress={handleSubmit(onSubmit)}
-      >
-        <Text className="font-rbold text-lg">
-          {isLoading ? "Finalizando..." : "Finalizar exercício"}
-        </Text>
-      </TouchableOpacity>
+      {isButtonDisabled ? null : (
+        <TouchableOpacity
+          disabled={!isValid || isLoading || isButtonDisabled}
+          className={`w-full rounded-full py-4 items-center ${
+            !isValid || isLoading || isButtonDisabled
+              ? "bg-stronggreen opacity-50"
+              : "bg-stronggreen"
+          }`}
+          onPress={handleSubmit(onSubmit)}
+        >
+          <Text className="font-rbold text-lg">
+            {isLoading ? "Finalizando..." : "Finalizar exercício"}
+          </Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 };

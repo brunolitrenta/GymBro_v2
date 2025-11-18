@@ -43,10 +43,10 @@ const CustomAlert = ({
             }}
             activeOpacity={0.7}
             className={`w-full py-4 rounded-full items-center ${
-              act.style === "destructive" ? "bg-red-500" : "bg-stronggreen"
+              act.style === "destructive" ? "bg-red-500" : act.style === "cancel" ? "bg-gray-100" : "bg-stronggreen"
             }`}
           >
-            <Text className="text-textcolor font-rbold text-lg">{act.text}</Text>
+            <Text className={"text-textcolor font-rbold text-lg" + (act.style === "destructive" ? " text-white" : "")}>{act.text}</Text>
           </TouchableOpacity>
         ))}
       </View>

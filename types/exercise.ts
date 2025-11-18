@@ -5,7 +5,7 @@ export const exerciseFormSchema = z.object({
     .number()
     .min(0, "Carga deve ser maior ou igual a 0")
     .nonnegative("Carga não pode ser negativa"),
-  series: z
+  sets: z
     .number()
     .min(1, "Séries deve ser maior que 0")
     .positive("Séries deve ser um número positivo")

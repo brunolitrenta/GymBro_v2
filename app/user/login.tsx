@@ -213,11 +213,11 @@ const Login = () => {
               <Pressable
                 disabled={!isValid || isLoading}
                 className={`w-full h-14 mb-6 ${
-                  !isValid || isLoading ? "bg-grayish opacity-50" : "bg-secondary"
-                } rounded-2xl justify-center items-center`}
+                  !isValid || isLoading ? "bg-secondary/30 opacity-50" : "bg-darkgreen"
+                } rounded-3xl justify-center items-center shadow-md`}
                 onPress={handleSubmit(onSubmit)}
               >
-                <Text className="text-white text-lg font-rsemi">
+                <Text className="text-white text-lg font-rbold">
                   {isLoading ? "Entrando..." : "Entrar"}
                 </Text>
               </Pressable>
@@ -228,7 +228,7 @@ const Login = () => {
                   onPress={() => router.push("/user/register")}
                   disabled={isLoading}
                 >
-                  <Text className="text-base font-rsemi text-lightgreen">Registre-se agora</Text>
+                  <Text className="text-base font-rsemi text-darkgreen">Registre-se agora</Text>
                 </Pressable>
               </View>
 

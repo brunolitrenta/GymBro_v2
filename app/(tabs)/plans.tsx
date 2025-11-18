@@ -83,37 +83,42 @@ const Plans = () => {
   return (
     <SafeAreaView
       edges={["top"]}
-      className="flex-1 items-center bg-primary p-6"
+      className="flex-1 bg-primary"
     >
-      <View className="flex-row w-full justify-between items-center mb-4">
-        <TouchableOpacity
-          className="h-12 w-10 items-center justify-center"
-          onPress={() => router.back()}
-        >
-          <FontAwesome6 name="arrow-left" size={32} color="black" />
-        </TouchableOpacity>
-        <Text className="font-rbold text-2xl">Meus Planos</Text>
-        <Link asChild href="/modals/createPlan">
-          <TouchableOpacity className="items-center justify-center">
-            <FontAwesome6 name="circle-plus" size={40} color="#D5D962" />
+      <View className="px-6 pt-4 pb-6">
+        <View className="flex-row justify-between items-center mb-2">
+          <TouchableOpacity
+            className="h-12 w-12 items-center justify-center bg-secondary/10 rounded-2xl"
+            onPress={() => router.back()}
+          >
+            <FontAwesome6 name="arrow-left" size={24} color="#2D3748" />
           </TouchableOpacity>
-        </Link>
+          <Link asChild href="/modals/createPlan">
+            <TouchableOpacity className="bg-darkgreen w-12 h-12 rounded-2xl justify-center items-center shadow-md active:opacity-80">
+              <FontAwesome6 name="plus" size={20} color="white" />
+            </TouchableOpacity>
+          </Link>
+        </View>
+        <Text className="font-rbold text-4xl color-textcolor mt-2">Meus Planos</Text>
+        <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
       </View>
 
       {loading ? (
-        <View className="h-full w-full items-center justify-center">
-          <ActivityIndicator size="large" color="#000" />
-          <Text className="mt-3 text-black font-rregular">
-            Carregando planos…
-          </Text>
+        <View className="flex-1 px-6 items-center justify-center">
+          <View className="bg-white rounded-3xl p-8 w-full items-center shadow-md">
+            <ActivityIndicator size="large" color="#D5D962" />
+            <Text className="mt-4 text-secondary font-rregular text-sm">
+              Carregando seus planos…
+            </Text>
+          </View>
         </View>
       ) : (
         <ScrollView
-          className="w-full"
+          className="flex-1 px-6"
           contentContainerStyle={{
             paddingBottom: 80,
-            flexGrow: 1,
           }}
+          showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -124,64 +129,78 @@ const Plans = () => {
           }
         >
           {plans.length > 0 ? (
-            <View className="gap-4">
-              {plans.map((plan: any) => (
-                <TouchableOpacity
-                  key={plan.id}
-                  className="w-full bg-white rounded-2xl p-6 border-2 border-black/5 shadow-sm"
-                  activeOpacity={0.7}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/plan/[name]" as any,
-                      params: {
-                        planId: plan.id,
-                        planName: plan.name,
-                      },
-                    })
-                  }
-                >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-4 flex-1">
-                      <View className="bg-stronggreen/30 w-14 h-14 rounded-2xl items-center justify-center">
-                        <FontAwesome6
-                          name="dumbbell"
-                          size={24}
-                          color="#000"
-                        />
+            <View>
+              <View className="mb-4">
+                <Text className="text-secondary font-rbold text-xl">
+                  Seus Planos de Treino
+                </Text>
+                <Text className="text-secondary/60 font-rregular text-sm">
+                  {plans.length} {plans.length === 1 ? 'plano' : 'planos'}
+                </Text>
+              </View>
+              <View className="gap-4">
+                {plans.map((plan: any) => (
+                  <TouchableOpacity
+                    key={plan.id}
+                    className="bg-white rounded-3xl p-5 shadow-md active:opacity-90"
+                    activeOpacity={0.7}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/plan/[name]" as any,
+                        params: {
+                          planId: plan.id,
+                          planName: plan.name,
+                        },
+                      })
+                    }
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-row items-center gap-4 flex-1">
+                        <View className="bg-darkgreen/20 w-14 h-14 rounded-2xl items-center justify-center">
+                          <FontAwesome6
+                            name="dumbbell"
+                            size={24}
+                            color="#D5D962"
+                          />
+                        </View>
+                        <Text className="font-rbold text-xl text-secondary flex-1">
+                          {plan.name}
+                        </Text>
                       </View>
-                      <Text className="font-rbold text-2xl text-black flex-1">
-                        {plan.name}
-                      </Text>
+                      <FontAwesome6
+                        name="chevron-right"
+                        size={20}
+                        color="#D5D962"
+                      />
                     </View>
-                    <FontAwesome6
-                      name="chevron-right"
-                      size={20}
-                      color="#000"
-                      style={{ opacity: 0.3 }}
-                    />
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           ) : (
-            <View className="flex-1 items-center justify-center px-6">
-              <FontAwesome6 name="file-invoice" size={64} color="black" />
-              <Text className="font-rsemi text-xl mt-4 text-black">
-                Nenhum plano criado
-              </Text>
-              <Text className="font-rregular text-center text-black/70 mt-2">
-                Toque no ícone <Text className="font-rsemi">"+"</Text> no canto
-                superior direito para criar seu primeiro plano de treino.
-              </Text>
-              <Link asChild href="/modals/createPlan" >
-                <TouchableOpacity
-                  className="mt-6 flex-row items-center gap-2 bg-stronggreen px-6 py-3 rounded-full"
-                  activeOpacity={0.9}
-                >
-                  <FontAwesome6 name="circle- plus" size={24} color="black" />
-                  <Text className="font-rsemi text-black">Criar plano</Text>
-                </TouchableOpacity>
-              </Link>
+            <View className="flex-1 items-center justify-center">
+              <View className="bg-white rounded-3xl p-8 w-full items-center shadow-md">
+                <View className="bg-darkgreen/10 w-20 h-20 rounded-full justify-center items-center mb-4">
+                  <FontAwesome6 name="file-invoice" size={32} color="#D5D962" />
+                </View>
+                <Text className="font-rbold text-xl text-secondary mb-2">
+                  Nenhum plano criado
+                </Text>
+                <Text className="font-rregular text-center text-secondary/60 mb-6 px-4">
+                  Crie seu primeiro plano de treino para começar
+                </Text>
+                <Link asChild href="/modals/createPlan" >
+                  <TouchableOpacity
+                    className="bg-darkgreen px-6 py-3 rounded-2xl shadow-md active:opacity-80"
+                    activeOpacity={0.9}
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <FontAwesome6 name="plus" size={18} color="white" />
+                      <Text className="font-rsemi text-white text-base">Criar Plano</Text>
+                    </View>
+                  </TouchableOpacity>
+                </Link>
+              </View>
             </View>
           )}
         </ScrollView>

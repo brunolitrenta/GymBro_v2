@@ -55,15 +55,21 @@ const exercisePage = () => {
 
   const onSubmit = async (data: ExerciseFormData) => {
     try {
-      await api.post("/workout/session/set", {
-        exerciseId: parsedExercise.id,
-        sessionId: sessionId || null,
-        userId,
-        weight: data.weight,
-        sets: data.sets,
-        reps: data.reps,
-        notes: data.notes || null,
-      });
+      await api.post(
+        "/workout/session/set",
+        {
+          exerciseId: parsedExercise.id,
+          sessionId: sessionId || null,
+          userId,
+          weight: data.weight,
+          sets: data.sets,
+          reps: data.reps,
+          notes: data.notes || null,
+        },
+        {
+          headers: { "X-Silent": "true" },
+        }
+      );
 
       router.back();
     } catch (error: unknown) {
@@ -100,7 +106,7 @@ const exercisePage = () => {
   return (
     <SafeAreaView
       edges={["top"]}
-      className="flex-1 items-center bg-primary p-6"
+      className="flex-1 bg-primary"
     >
       <CustomAlert
         visible={alertVisible}
@@ -113,179 +119,181 @@ const exercisePage = () => {
             : undefined
         }
       />
-      <View className="flex-row w-full h-12 justify-between items-center mb-6">
-        <TouchableOpacity
-          className="h-12 w-10 items-center justify-center"
-          onPress={() => router.back()}
-        >
-          <FontAwesome6 name="arrow-left" size={28} color="black" />
-        </TouchableOpacity>
-        <Text className="font-rbold text-xl text-center flex-1">
-          {parsedExercise.exerciseDef.name || "Crucifixo com Halter"}
-        </Text>
-        <View className="h-12 w-10" />
-      </View>
-
-      <View className="w-11/12 h-48 justify-center items-center bg-black rounded-3xl mb-6">
-        <MaterialCommunityIcons name="image-outline" size={80} color="white" />
-      </View>
-
-      <View className="w-full mb-6">
-        <View className="flex-row w-full justify-between items-start mb-4">
-          <View className="w-[48%] items-center">
-            <Text className="text-darkgreen font-rbold text-lg mb-2">
-              Repetições
-            </Text>
-            <Controller
-              control={control}
-              name="reps"
-              render={({ field: { onChange, value } }) => (
-                <View className="w-full">
-                  <TextInput
-                    className={`bg-white border-2 ${
-                      errors.reps ? "border-red-500" : "border-gray-300"
-                    } rounded-xl px-4 py-3 w-full font-rsemi text-xl text-center`}
-                    value={value > 0 ? value.toString() : ""}
-                    onChangeText={(text) => {
-                      const cleaned = text.replace(/[^0-9]/g, "");
-                      onChange(cleaned ? parseInt(cleaned) : 0);
-                    }}
-                    placeholder="Ex: 12"
-                    placeholderTextColor="#999"
-                    keyboardType="number-pad"
-                    autoComplete="off"
-                    editable={!isLoading && !isButtonDisabled}
-                  />
-                  {errors.reps && (
-                    <Text className="text-red-500 text-xs mt-1 text-center">
-                      {errors.reps.message}
-                    </Text>
-                  )}
-                </View>
-              )}
-            />
-          </View>
-          <View className="w-[48%] items-center">
-            <Text className="text-darkgreen font-rbold text-lg mb-2">
-              Séries
-            </Text>
-            <Controller
-              control={control}
-              name="sets"
-              render={({ field: { onChange, value } }) => (
-                <View className="w-full">
-                  <TextInput
-                    className={`bg-white border-2 ${
-                      errors.sets ? "border-red-500" : "border-gray-300"
-                    } rounded-xl px-4 py-3 w-full font-rsemi text-xl text-center`}
-                    value={value > 0 ? value.toString() : ""}
-                    onChangeText={(text) => {
-                      const cleaned = text.replace(/[^0-9]/g, "");
-                      onChange(cleaned ? parseInt(cleaned) : 0);
-                    }}
-                    placeholder="Ex: 3"
-                    placeholderTextColor="#999"
-                    keyboardType="number-pad"
-                    autoComplete="off"
-                    editable={!isLoading && !isButtonDisabled}
-                  />
-                  {errors.sets && (
-                    <Text className="text-red-500 text-xs mt-1 text-center">
-                      {errors.sets.message}
-                    </Text>
-                  )}
-                </View>
-              )}
-            />
-          </View>
-        </View>
-        <View className="w-full items-center">
-          <Text className="text-darkgreen font-rbold text-lg mb-2">
-            Carga (kg)
+      <View className="px-6 pt-4 pb-6">
+        <View className="flex-row justify-between items-center mb-4">
+          <TouchableOpacity
+            className="h-12 w-12 items-center justify-center bg-secondary/10 rounded-2xl"
+            onPress={() => router.back()}
+          >
+            <FontAwesome6 name="arrow-left" size={24} color="#2D3748" />
+          </TouchableOpacity>
+          <Text className="font-rbold text-2xl text-center flex-1 px-4 text-secondary">
+            {parsedExercise.exerciseDef.name || "Exercício"}
           </Text>
-          <Controller
-            control={control}
-            name="weight"
-            render={({ field: { onChange, value } }) => (
-              <View className="w-full">
-                <TextInput
-                  className={`bg-white border-2 ${
-                    errors.weight ? "border-red-500" : "border-gray-300"
-                  } rounded-xl px-4 py-3 w-full font-rsemi text-xl text-center`}
-                  value={value > 0 ? value.toString() : ""}
-                  onChangeText={(text) => {
-                    const cleaned = text.replace(/[^0-9.]/g, "");
-                    onChange(cleaned ? parseFloat(cleaned) : 0);
-                  }}
-                  placeholder="Ex: 30"
-                  placeholderTextColor="#999"
-                  keyboardType="decimal-pad"
-                  autoComplete="off"
-                  editable={!isLoading && !isButtonDisabled}
-                />
-                {errors.weight && (
-                  <Text className="text-red-500 text-xs mt-1 text-center">
-                    {errors.weight.message}
-                  </Text>
-                )}
-              </View>
-            )}
-          />
+          <View className="h-12 w-12" />
         </View>
-      </View>
 
-      <View className="w-full mb-6">
-        <Text className="text-darkgreen font-rbold text-lg mb-2">
-          Anotações
-        </Text>
-        <Controller
-          control={control}
-          name="notes"
-          render={({ field: { onChange, value } }) => (
-            <View className="w-full">
-              <View
-                className={`bg-white border-2 ${
-                  errors.notes ? "border-red-500" : "border-gray-300"
-                } rounded-xl p-4 h-32`}
-              >
-                <TextInput
-                  className="flex-1 font-rregular text-base text-gray-700"
-                  placeholder="Anote aqui suas observações"
-                  placeholderTextColor="#999"
-                  multiline
-                  textAlignVertical="top"
-                  value={value}
-                  onChangeText={onChange}
-                  maxLength={500}
-                  autoComplete="off"
-                  editable={!isLoading && !isButtonDisabled}
-                />
-              </View>
-              {errors.notes && (
-                <Text className="text-red-500 text-xs mt-1">
-                  {errors.notes.message}
+        <View className="bg-secondary/5 rounded-3xl h-48 justify-center items-center mb-6 overflow-hidden">
+          <MaterialCommunityIcons name="image-outline" size={80} color="#D5D962" opacity={0.3} />
+          <Text className="text-secondary/40 font-rregular text-sm mt-2">Imagem do exercício</Text>
+        </View>
+
+        <View className="mb-6">
+          <Text className="text-secondary font-rbold text-xl mb-4">
+            Informações do Treino
+          </Text>
+          <View className="bg-white rounded-3xl p-5 shadow-md mb-4">
+            <View className="flex-row justify-between mb-4">
+              <View className="flex-1 mr-2">
+                <Text className="text-darkgreen font-rsemi text-sm mb-2">
+                  REPETIÇÕES
                 </Text>
-              )}
+                <Controller
+                  control={control}
+                  name="reps"
+                  render={({ field: { onChange, value } }) => (
+                    <View>
+                      <TextInput
+                        className={`bg-secondary/5 border-2 ${
+                          errors.reps ? "border-red-500" : "border-secondary/10"
+                        } rounded-2xl px-4 py-3 font-rbold text-2xl text-center text-secondary`}
+                        value={value > 0 ? value.toString() : ""}
+                        onChangeText={(text) => {
+                          const cleaned = text.replace(/[^0-9]/g, "");
+                          onChange(cleaned ? parseInt(cleaned) : 0);
+                        }}
+                        placeholder="0"
+                        placeholderTextColor="#999"
+                        keyboardType="number-pad"
+                        autoComplete="off"
+                        editable={!isLoading && !isButtonDisabled}
+                      />
+                      {errors.reps && (
+                        <Text className="text-red-500 text-xs mt-1 text-center">
+                          {errors.reps.message}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                />
+              </View>
+              <View className="flex-1 ml-2">
+                <Text className="text-darkgreen font-rsemi text-sm mb-2">
+                  SÉRIES
+                </Text>
+                <Controller
+                  control={control}
+                  name="sets"
+                  render={({ field: { onChange, value } }) => (
+                    <View>
+                      <TextInput
+                        className={`bg-secondary/5 border-2 ${
+                          errors.sets ? "border-red-500" : "border-secondary/10"
+                        } rounded-2xl px-4 py-3 font-rbold text-2xl text-center text-secondary`}
+                        value={value > 0 ? value.toString() : ""}
+                        onChangeText={(text) => {
+                          const cleaned = text.replace(/[^0-9]/g, "");
+                          onChange(cleaned ? parseInt(cleaned) : 0);
+                        }}
+                        placeholder="0"
+                        placeholderTextColor="#999"
+                        keyboardType="number-pad"
+                        autoComplete="off"
+                        editable={!isLoading && !isButtonDisabled}
+                      />
+                      {errors.sets && (
+                        <Text className="text-red-500 text-xs mt-1 text-center">
+                          {errors.sets.message}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                />
+              </View>
             </View>
-          )}
-        />
-      </View>
+            <View>
+              <Text className="text-darkgreen font-rsemi text-sm mb-2">
+                CARGA (KG)
+              </Text>
+              <Controller
+                control={control}
+                name="weight"
+                render={({ field: { onChange, value } }) => (
+                  <View>
+                    <TextInput
+                      className={`bg-secondary/5 border-2 ${
+                        errors.weight ? "border-red-500" : "border-secondary/10"
+                      } rounded-2xl px-4 py-3 font-rbold text-2xl text-center text-secondary`}
+                      value={value > 0 ? value.toString() : ""}
+                      onChangeText={(text) => {
+                        const cleaned = text.replace(/[^0-9.]/g, "");
+                        onChange(cleaned ? parseFloat(cleaned) : 0);
+                      }}
+                      placeholder="0"
+                      placeholderTextColor="#999"
+                      keyboardType="decimal-pad"
+                      autoComplete="off"
+                      editable={!isLoading && !isButtonDisabled}
+                    />
+                    {errors.weight && (
+                      <Text className="text-red-500 text-xs mt-1 text-center">
+                        {errors.weight.message}
+                      </Text>
+                    )}
+                  </View>
+                )}
+              />
+            </View>
+          </View>
 
-      {isButtonDisabled ? null : (
-        <TouchableOpacity
-          disabled={!isValid || isLoading || isButtonDisabled}
-          className={`w-full rounded-full py-4 items-center ${
-            !isValid || isLoading || isButtonDisabled
-              ? "bg-stronggreen opacity-50"
-              : "bg-stronggreen"
-          }`}
-          onPress={handleSubmit(onSubmit)}
-        >
-          <Text className="font-rbold text-lg">
-            {isLoading ? "Finalizando..." : "Finalizar exercício"}
-          </Text>
-        </TouchableOpacity>
-      )}
+          <View className="bg-white rounded-3xl p-5 shadow-md">
+            <Text className="text-darkgreen font-rsemi text-sm mb-2">
+              ANOTAÇÕES
+            </Text>
+            <Controller
+              control={control}
+              name="notes"
+              render={({ field: { onChange, value } }) => (
+                <View>
+                  <TextInput
+                    className={`bg-secondary/5 border-2 ${
+                      errors.notes ? "border-red-500" : "border-secondary/10"
+                    } rounded-2xl p-4 h-28 font-rregular text-base text-secondary`}
+                    placeholder="Suas observações sobre o exercício"
+                    placeholderTextColor="#999"
+                    multiline
+                    textAlignVertical="top"
+                    value={value}
+                    onChangeText={onChange}
+                    maxLength={500}
+                    autoComplete="off"
+                    editable={!isLoading && !isButtonDisabled}
+                  />
+                  {errors.notes && (
+                    <Text className="text-red-500 text-xs mt-1">
+                      {errors.notes.message}
+                    </Text>
+                  )}
+                </View>
+              )}
+            />
+          </View>
+        </View>
+
+        {!isButtonDisabled && (
+          <TouchableOpacity
+            disabled={!isValid || isLoading || isButtonDisabled}
+            className={`bg-darkgreen rounded-3xl py-5 shadow-lg ${
+              !isValid || isLoading || isButtonDisabled ? "opacity-50" : ""
+            }`}
+            onPress={handleSubmit(onSubmit)}
+          >
+            <Text className="font-rbold text-xl text-white text-center">
+              {isLoading ? "Finalizando..." : "Finalizar Exercício"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </SafeAreaView>
   );
 };

@@ -3,15 +3,36 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { months, weekDays } from "../constants/Calendar";
 import { FontAwesome, FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
+import { useAuth } from "@/hooks/authContext";
+import api from "@/utils/axiosConfig";
 
 const Calendario = () => {
   const today = new Date();
+  const { userId } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [daysInMonth, setDaysInMonth] = useState<number[]>([]);
+  const [workoutSessions, setWorkoutSessions] = useState<any[]>([]);
 
   const monthName = months[currentMonth];
+
+  useEffect(() => {
+    const fetchWorkoutSessions = async () => {
+      if (!userId) return;
+      
+      try {
+        const response = await api.get(`/workout/session/all/${userId}`, {
+          headers: { "X-Silent": "true" },
+        });
+        setWorkoutSessions(response.data.data || []);
+      } catch (error) {
+        console.error("Erro ao buscar sessões de treino:", error);
+      }
+    };
+    
+    fetchWorkoutSessions();
+  }, [userId]);
 
   const getFirstDayOfWeek = useCallback(
     (year: number, month: number): number => {
@@ -53,6 +74,19 @@ const Calendario = () => {
     }
   };
 
+  const getWorkoutForDay = (year: number, month: number, day: number): any => {
+    const targetDate = new Date(year, month, day);
+    const targetDateStr = targetDate.toISOString().split('T')[0];
+    
+    const session = workoutSessions.find((s: any) => {
+      if (!s.finishedAt) return false;
+      const sessionDate = new Date(s.finishedAt).toISOString().split('T')[0];
+      return sessionDate === targetDateStr;
+    });
+    
+    return session || null;
+  };
+
   const renderDays = () => {
     const blanks = Array(firstDay).fill(null);
     const allDays = [...blanks, ...daysInMonth];
@@ -61,28 +95,68 @@ const Calendario = () => {
         day === today.getDate() &&
         currentMonth === today.getMonth() &&
         currentYear === today.getFullYear();
+      
+      const workout = day ? getWorkoutForDay(currentYear, currentMonth, day) : null;
 
       return (
         <View
           key={index}
-          className="w-[14.28%] h-12 items-center justify-center my-1"
+          className="w-[14.28%] items-center justify-center my-1"
         >
           {day ? (
-            <TouchableOpacity
-              className={`w-9 h-9 items-center justify-center rounded-full ${
-                isToday ? "bg-lightgreen" : ""
-              }`}
-            >
-              <Text
-                className={`text-base ${
-                  isToday ? "text-secondary font-bold" : "text-white"
-                }`}
-              >
-                {day}
-              </Text>
-            </TouchableOpacity>
+            <View className="items-center relative">
+              {workout ? (
+                <Link
+                  asChild
+                  href={{
+                    pathname: "/modals/workoutDetails",
+                    params: {
+                      workoutName: workout.workout?.name,
+                      planName: workout.workout?.plan?.name || '',
+                      startedAt: workout.startedAt,
+                      finishedAt: workout.finishedAt,
+                      notes: workout.notes || '',
+                    },
+                  }}
+                >
+                  <TouchableOpacity
+                    className={`w-10 h-10 items-center justify-center rounded-2xl ${
+                      isToday ? "bg-darkgreen" : "bg-darkgreen/10"
+                    }`}
+                  >
+                    <Text
+                      className={`text-base font-rsemi ${
+                        isToday ? "text-white" : "text-darkgreen"
+                      }`}
+                    >
+                      {day}
+                    </Text>
+                  </TouchableOpacity>
+                </Link>
+              ) : (
+                <TouchableOpacity
+                  className={`w-10 h-10 items-center justify-center rounded-2xl ${
+                    isToday ? "bg-darkgreen/20" : ""
+                  }`}
+                  disabled
+                >
+                  <Text
+                    className={`text-base font-rregular ${
+                      isToday ? "text-darkgreen font-rbold" : "text-secondary"
+                    }`}
+                  >
+                    {day}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {workout && (
+                <View className={`w-1.5 h-1.5 rounded-full mt-1 ${
+                  isToday ? "bg-stronggreen" : "bg-darkgreen"
+                }`} />
+              )}
+            </View>
           ) : (
-            <View className="w-9 h-9" />
+            <View className="w-10 h-10" />
           )}
         </View>
       );
@@ -90,51 +164,78 @@ const Calendario = () => {
   };
 
   return (
-    <SafeAreaView edges={["top"]} className="flex-1 bg-white items-center gap-[10%] py-6 px-4">
-      <View className="flex-row w-11/12 justify-between items-center">
-        <TouchableOpacity
-          className="h-12 w-10 items-center justify-center"
-          onPress={() => router.back()}
-        >
-          <FontAwesome6 name="arrow-left" size={32} color="black" />
-        </TouchableOpacity>
-        <Text className="font-rbold text-3xl">Calendário</Text>
-        <FontAwesome6 name="calendar-days" size={32} color="black" />
-      </View>
-      <View className="flex-row w-11/12 justify-evenly">
-        <View className="items-center">
-          <Text className="font-rsemi">X</Text>
-          <Text className="font-rregular">treinos</Text>
-        </View>
-        <View className="items-center">
-          <Text className="font-rsemi">X</Text>
-          <Text className="font-rregular">metas alcançadas</Text>
-        </View>
-        <View className="items-center">
-          <Text className="font-rsemi">X</Text>
-          <Text className="font-rregular">streaks</Text>
-        </View>
-      </View>
-      <View className="bg-secondary rounded-2xl p-4 w-11/12">
-        <View className="w-full flex-row justify-between items-center mb-4">
-          <TouchableOpacity onPress={handlePrevMonth}>
-            <FontAwesome name="chevron-left" size={24} color="white" />
+    <SafeAreaView edges={["top"]} className="flex-1 bg-primary">
+      <View className="px-6 pt-4 pb-6">
+        <View className="flex-row justify-between items-center mb-2">
+          <TouchableOpacity
+            className="h-12 w-12 items-center justify-center bg-secondary/10 rounded-2xl"
+            onPress={() => router.back()}
+          >
+            <FontAwesome6 name="arrow-left" size={24} color="#2D3748" />
           </TouchableOpacity>
-          <Text className="text-xl font-bold text-white">
-            {monthName} {currentYear}
-          </Text>
-          <TouchableOpacity onPress={handleNextMonth}>
-            <FontAwesome name="chevron-right" size={24} color="white" />
-          </TouchableOpacity>
+          <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center">
+            <FontAwesome6 name="calendar-days" size={24} color="#D5D962" />
+          </View>
         </View>
-        <View className="w-full flex-row justify-around mb-2">
-          {weekDays.map((weekDay, idx) => (
-            <Text key={idx} className="w-10 text-center text-xs font-semibold text-white" numberOfLines={1}>
-              {weekDay}
+        <Text className="font-rbold text-4xl color-textcolor">Calendário</Text>
+        <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
+      </View>
+      
+      <View className="px-6 mb-6">
+        <View className="bg-white rounded-3xl p-5 shadow-md">
+          <View className="flex-row justify-around">
+            <View className="items-center">
+              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
+                <FontAwesome6 name="dumbbell" size={20} color="#D5D962" />
+              </View>
+              <Text className="font-rbold text-2xl text-secondary">X</Text>
+              <Text className="font-rregular text-xs text-secondary/60">treinos</Text>
+            </View>
+            <View className="items-center">
+              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
+                <FontAwesome6 name="bullseye" size={20} color="#D5D962" />
+              </View>
+              <Text className="font-rbold text-2xl text-secondary">X</Text>
+              <Text className="font-rregular text-xs text-secondary/60">metas</Text>
+            </View>
+            <View className="items-center">
+              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
+                <FontAwesome6 name="fire" size={20} color="#D5D962" />
+              </View>
+              <Text className="font-rbold text-2xl text-secondary">X</Text>
+              <Text className="font-rregular text-xs text-secondary/60">streaks</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+      <View className="px-6 flex-1">
+        <View className="bg-white rounded-3xl p-5 shadow-md">
+          <View className="w-full flex-row justify-between items-center mb-6">
+            <TouchableOpacity 
+              onPress={handlePrevMonth}
+              className="bg-darkgreen/10 w-10 h-10 rounded-2xl items-center justify-center"
+            >
+              <FontAwesome name="chevron-left" size={20} color="#D5D962" />
+            </TouchableOpacity>
+            <Text className="text-xl font-rbold text-secondary">
+              {monthName} {currentYear}
             </Text>
-          ))}
+            <TouchableOpacity 
+              onPress={handleNextMonth}
+              className="bg-darkgreen/10 w-10 h-10 rounded-2xl items-center justify-center"
+            >
+              <FontAwesome name="chevron-right" size={20} color="#D5D962" />
+            </TouchableOpacity>
+          </View>
+          <View className="w-full flex-row justify-around mb-3">
+            {weekDays.map((weekDay, idx) => (
+              <Text key={idx} className="w-10 text-center text-xs font-rsemi text-secondary/60" numberOfLines={1}>
+                {weekDay}
+              </Text>
+            ))}
+          </View>
+          <View className="w-full flex-row flex-wrap">{renderDays()}</View>
         </View>
-        <View className="w-full flex-row flex-wrap">{renderDays()}</View>
       </View>
     </SafeAreaView>
   );

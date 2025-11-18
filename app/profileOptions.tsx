@@ -98,7 +98,7 @@ const ProfileOptions = () => {
   const weekDays = ["D", "S", "T", "Q", "Q", "S", "S"];
 
   return (
-    <SafeAreaView className="flex-1 bg-primary p-6">
+    <SafeAreaView className="flex-1 bg-primary">
       <CustomAlert
         visible={alertVisible}
         title={alertTitle}
@@ -110,22 +110,29 @@ const ProfileOptions = () => {
         keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
         style={{ flex: 1 }}
       >
-        <View className="flex-row w-full justify-between items-center">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-12 w-10 items-center justify-center"
-          >
-            <FontAwesome6 name="arrow-left" size={32} color="black" />
-          </Pressable>
-          <Text className="font-rbold text-3xl color-textcolor">
-            Dados pessoais
-          </Text>
-          <FontAwesome6 name="user-large" size={28} color="textcolor" />
+        <View className="px-6 pt-4 pb-6">
+          <View className="flex-row justify-between items-center mb-2">
+            <Pressable
+              onPress={() => router.back()}
+              className="h-12 w-12 items-center justify-center bg-secondary/10 rounded-2xl"
+            >
+              <FontAwesome6 name="arrow-left" size={24} color="#2D3748" />
+            </Pressable>
+            <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center">
+              <FontAwesome6 name="user-large" size={24} color="#D5D962" />
+            </View>
+          </View>
+          <Text className="font-rbold text-4xl color-textcolor">Dados Pessoais</Text>
+          <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
         </View>
 
         <ScrollView
           ref={scrollViewRef}
-          className={["mt-4 grow"] + (keyboardVisible ? "pb-[300px]" : "pb-[80px]")}
+          className="px-6"
+          contentContainerStyle={{
+            paddingBottom: keyboardVisible ? 300 : 80,
+            paddingTop: 16
+          }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -424,11 +431,11 @@ const ProfileOptions = () => {
           <Pressable
             disabled={!isValid}
             className={`w-full h-12 mb-4 ${
-              !isValid ? "bg-grayish opacity-50" : "bg-lightgreen"
-            } rounded-2xl justify-center items-center`}
+              !isValid ? "bg-secondary/30 opacity-50" : "bg-darkgreen"
+            } rounded-3xl justify-center items-center shadow-md`}
             onPress={handleSubmit(onSubmit)}
           >
-            <Text className="text-black text-base font-rsemi">Salvar</Text>
+            <Text className="text-white text-base font-rbold">Salvar</Text>
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -1,10 +1,12 @@
-import { View, Text, Pressable } from 'react-native'
+import { View, Text, Pressable, Dimensions } from 'react-native'
 import React from 'react'
 import { router, useLocalSearchParams } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { useAuth } from '@/hooks/authContext';
 import CustomAlert from './customAlert';
 import { useState } from 'react';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const PlanOptions = () => {
     const { planId, planName } = useLocalSearchParams();
@@ -33,7 +35,7 @@ const PlanOptions = () => {
     }
 
     return (
-        <View className='flex-1 justify-center items-center' style={{ backgroundColor: 'transparent' }}>
+        <View className='flex-1 bg-transparent'>
             <CustomAlert
                 visible={alertVisible}
                 title={alertTitle}
@@ -44,21 +46,30 @@ const PlanOptions = () => {
                     { text: 'Excluir', onPress: () => deletePlan(), style: 'destructive' },
                 ]}
             />
-            <Pressable android_disableSound onPress={() => router.back()} className='h-full w-full fixed'></Pressable>
-            <View className={`w-1/2 ${isTrainer ? 'h-1/4' : 'h-[15%]'} bg-primary rounded-3xl absolute top-[10%] left-[45%] items-center justify-evenly shadow-lg shadow-stone-950`}>
+            <Pressable android_disableSound onPress={() => router.back()} className='h-full w-full'></Pressable>
+            <View 
+                className='bg-white rounded-2xl shadow-2xl overflow-hidden' 
+                style={{
+                    position: 'absolute', 
+                    top: 70, 
+                    right: 20, 
+                    width: 180,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 10,
+                }}
+            >
                 {isTrainer && (
-                    <Pressable onPress={() => sharePlan()} className='flex-row w-full h-1/2 justify-around items-center rounded-t-2xl active:bg-grayish'>
-                        <View className='w-4/5 justify-around flex-row'>
-                            <FontAwesome6 name="share" size={24} color="black" />
-                            <Text className='font-rsemi text-xl w-4/6 text-center'>Encaminhar</Text>
-                        </View>
+                    <Pressable onPress={() => sharePlan()} className='flex-row items-center gap-2 px-4 py-4 border-b border-secondary/10 active:bg-secondary/5'>
+                        <FontAwesome6 name="share" size={18} color="#D5D962" />
+                        <Text className='font-rsemi text-base ml-4 text-secondary'>Encaminhar</Text>
                     </Pressable>
                 )}
-                <Pressable onPress={() => confirmRemoval()} className={`flex-row w-full ${isTrainer ? 'h-1/2 rounded-b-2xl' : 'h-full rounded-3xl'} justify-around items-center active:bg-grayish`}>
-                    <View className='w-4/5 justify-around flex-row'>
-                        <FontAwesome6 name="trash" size={24} color="black" />
-                        <Text className='font-rsemi text-xl w-4/6 text-center'>Excluir</Text>
-                    </View>
+                <Pressable onPress={() => confirmRemoval()} className='flex-row items-center gap-2 px-4 py-4 active:bg-secondary/5'>
+                    <FontAwesome6 name="trash" size={18} color="#EF4444" />
+                    <Text className='font-rsemi text-base ml-4 text-red-500'>Excluir</Text>
                 </Pressable>
             </View>
         </View>

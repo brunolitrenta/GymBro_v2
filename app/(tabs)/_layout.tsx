@@ -1,6 +1,7 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
+import { Pressable } from "react-native";
 
 const TabsLayout = () => {
   return (
@@ -9,6 +10,7 @@ const TabsLayout = () => {
         tabBarActiveTintColor: "black",
         tabBarInactiveTintColor: "#00000065",
         tabBarStyle: { backgroundColor: "#D6D984", height: "7%" },
+        tabBarButton: (props) => <Pressable {...props} android_ripple={{ color: 'transparent' }} />,
       }}
     >
       <Tabs.Screen

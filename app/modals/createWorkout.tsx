@@ -115,56 +115,45 @@ const CreateWorkout = () => {
         }}
         className={`w-full rounded-2xl p-4 mb-3 flex-row justify-between items-center ${
           foundId
-            ? "bg-stronggreen border-2 border-darkgreen"
-            : "bg-lightgreen border-2 border-transparent"
+            ? "bg-darkgreen/10 border-2 border-darkgreen"
+            : "bg-secondary/5 border-2 border-transparent"
         }`}
-        style={{
-          shadowColor: foundId ? "#0D0D0D" : "transparent",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.25,
-          shadowRadius: 3.84,
-          elevation: foundId ? 5 : 2,
-        }}
       >
         <View
-          className={`w-14 h-14 rounded-xl justify-center items-center ${
-            foundId ? "bg-darkgreen" : "bg-black"
+          className={`w-14 h-14 rounded-2xl justify-center items-center ${
+            foundId ? "bg-darkgreen" : "bg-secondary/20"
           }`}
         >
           <MaterialCommunityIcons
             name="image-outline"
-            size={32}
-            color="white"
+            size={28}
+            color={foundId ? "white" : "#60665E"}
           />
         </View>
         <View className="flex-1 mx-3">
           <Text
-            className={`font-rbold text-base ${
-              foundId ? "text-textcolor" : "text-textcolor"
-            }`}
+            className={`font-rbold text-base text-secondary`}
             numberOfLines={2}
           >
             {item.name}
           </Text>
           {item.primaryMuscles && item.primaryMuscles[0] && (
             <Text
-              className={`font-rregular text-xs mt-1 ${
-                foundId ? "text-textcolor opacity-80" : "text-reallygray"
-              }`}
+              className="font-rregular text-xs mt-1 text-secondary/60"
             >
               {item.primaryMuscles[0].muscleGroup.name}
             </Text>
           )}
         </View>
         <View
-          className={`w-10 h-10 rounded-full justify-center items-center ${
-            foundId ? "bg-darkgreen" : "bg-grayish"
+          className={`w-10 h-10 rounded-2xl justify-center items-center ${
+            foundId ? "bg-darkgreen" : "bg-secondary/10"
           }`}
         >
           {foundId ? (
-            <FontAwesome6 size={20} name="check" color="#FFFFFF" />
+            <FontAwesome6 size={18} name="check" color="#FFFFFF" />
           ) : (
-            <View className="w-5 h-5 rounded-full border-2 border-reallygray" />
+            <View className="w-5 h-5 rounded-full border-2 border-secondary/30" />
           )}
         </View>
       </TouchableOpacity>
@@ -190,8 +179,7 @@ const CreateWorkout = () => {
 
   return (
     <View
-      className="flex-1 justify-center items-center"
-      style={{ backgroundColor: "transparent" }}
+      className="flex-1 justify-center items-center bg-black/50"
     >
       <CustomAlert
         visible={alertVisible}
@@ -202,56 +190,61 @@ const CreateWorkout = () => {
       <Pressable
         android_disableSound
         onPress={() => router.back()}
-        className="h-full w-full bg-black opacity-50 fixed"
-      ></Pressable>
-      <View className="w-11/12 h-5/6 bg-primary rounded-3xl absolute items-center gap-8 pt-8">
-        <View className="flex-row w-5/6 h-8 justify-between items-center">
-          <TouchableOpacity
-            className="h-12 w-10 items-center justify-center"
-            onPress={() => router.back()}
-          >
-            <FontAwesome6 name="arrow-left" size={32} color="#0d0d0d" />
-          </TouchableOpacity>
-          <Text className="font-rbold text-3xl text-textcolor">
-            Novo treino
-          </Text>
-          <FontAwesome6 name="dumbbell" size={28} color="#0d0d0d" />
+        className="h-full w-full absolute"
+      />
+      <View className="w-11/12 h-5/6 bg-white rounded-3xl items-center shadow-2xl">
+        <View className="w-full px-6 pt-6 pb-4">
+          <View className="flex-row justify-between items-center mb-4">
+            <TouchableOpacity
+              className="h-12 w-12 items-center justify-center bg-secondary/10 rounded-2xl"
+              onPress={() => router.back()}
+            >
+              <FontAwesome6 name="arrow-left" size={24} color="#2D3748" />
+            </TouchableOpacity>
+            <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center">
+              <FontAwesome6 name="dumbbell" size={24} color="#D5D962" />
+            </View>
+          </View>
+          <Text className="font-rbold text-3xl text-secondary">Novo Treino</Text>
+          <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
         </View>
-        <View className="w-11/12">
-          <Text className="text-textcolor font-rbold ml-2 text-xl">
-            Etiqueta
+        <View className="w-11/12 px-2 mb-4">
+          <Text className="text-secondary font-rbold text-lg mb-3">
+            Etiqueta do Treino
           </Text>
-          <View className="flex-row w-full justify-around">
-            {workoutLabels.map((label, index) => {
-              const foundButton = buttonsDisabled.find(
-                (button) => button === label
-              );
+          <View className="bg-secondary/5 rounded-2xl p-4">
+            <View className="flex-row justify-around">
+              {workoutLabels.map((label, index) => {
+                const foundButton = buttonsDisabled.find(
+                  (button) => button === label
+                );
 
-              return (
-                <Pressable
-                  disabled={foundButton ? true : false}
-                  onPress={() => setSelectedLabel(label)}
-                  key={index}
-                >
-                  <Text
-                    className={
-                      foundButton
-                        ? "font-rbold text-5xl text-secondary opacity-50"
-                        : selectedLabel === label
-                        ? "font-rbold text-5xl text-lightgreen"
-                        : "font-rbold text-5xl text-secondary"
-                    }
+                return (
+                  <Pressable
+                    disabled={foundButton ? true : false}
+                    onPress={() => setSelectedLabel(label)}
+                    key={index}
                   >
-                    {label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                    <Text
+                      className={
+                        foundButton
+                          ? "font-rbold text-5xl text-secondary opacity-30"
+                          : selectedLabel === label
+                          ? "font-rbold text-5xl text-darkgreen"
+                          : "font-rbold text-5xl text-secondary"
+                      }
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
         </View>
-        <View className="w-11/12">
-          <Text className="text-textcolor font-rbold ml-2 text-xl mb-2">
-            Filtro
+        <View className="w-11/12 px-2 mb-4">
+          <Text className="text-secondary font-rbold text-lg mb-3">
+            Filtrar Exercícios
           </Text>
           <View ref={dropdownButtonRef} className="w-full">
             <TouchableOpacity
@@ -268,19 +261,19 @@ const CreateWorkout = () => {
                   }
                 );
               }}
-              className="w-full bg-grayish rounded-2xl px-4 py-3 flex-row justify-between items-center border-2 border-reallygray"
+              className="w-full bg-secondary/5 rounded-2xl px-4 py-3 flex-row justify-between items-center border-2 border-secondary/10"
             >
               <Text
-                className={`font-rregular text-lg ${
-                  bodyAreaSelected ? "text-textcolor" : "text-reallygray"
+                className={`font-rregular text-base ${
+                  bodyAreaSelected ? "text-secondary" : "text-secondary/40"
                 }`}
               >
-                {bodyAreaSelected || "Filtre por uma parte do corpo"}
+                {bodyAreaSelected || "Todas as partes do corpo"}
               </Text>
               <FontAwesome6
                 name={isDropdownOpen ? "chevron-up" : "chevron-down"}
-                size={18}
-                color="#60665E"
+                size={16}
+                color="#D5D962"
               />
             </TouchableOpacity>
           </View>
@@ -357,14 +350,14 @@ const CreateWorkout = () => {
             </View>
           </Pressable>
         </Modal>
-        <View className="h-1/2 w-11/12">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-textcolor font-rbold ml-2 text-xl">
+        <View className="flex-1 w-11/12 px-2">
+          <View className="flex-row justify-between items-center mb-3">
+            <Text className="text-secondary font-rbold text-lg">
               Exercícios
             </Text>
             {selectedId.length > 0 && (
-              <View className="bg-stronggreen px-3 py-1 rounded-full">
-                <Text className="text-textcolor font-rbold text-sm">
+              <View className="bg-darkgreen/10 px-3 py-1.5 rounded-full">
+                <Text className="text-darkgreen font-rbold text-xs">
                   {selectedId.length} selecionado
                   {selectedId.length > 1 ? "s" : ""}
                 </Text>
@@ -373,8 +366,8 @@ const CreateWorkout = () => {
           </View>
           {isLoading ? (
             <View className="flex-1 justify-center items-center">
-              <ActivityIndicator size="large" color="#8FD14F" />
-              <Text className="text-textcolor font-rregular mt-2">
+              <ActivityIndicator size="large" color="#D5D962" />
+              <Text className="text-secondary font-rregular text-sm mt-2">
                 Carregando exercícios...
               </Text>
             </View>
@@ -387,15 +380,15 @@ const CreateWorkout = () => {
             />
           )}
         </View>
-        <View className="absolute bg-primary w-full h-16 top-[95%] rounded-b-2xl justify-center items-center">
+        <View className="w-full px-6 py-4 border-t border-secondary/10">
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => {
               addWorkout();
             }}
-            className="w-11/12 h-5/6 bg-stronggreen rounded-2xl justify-evenly items-center flex-row"
+            className="w-full py-4 bg-darkgreen rounded-2xl items-center shadow-md"
           >
-            <Text className="text-2xl font-rbold">Adicionar treino</Text>
+            <Text className="text-white text-lg font-rbold">Adicionar Treino</Text>
           </TouchableOpacity>
         </View>
       </View>

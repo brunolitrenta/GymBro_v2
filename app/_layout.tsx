@@ -145,6 +145,26 @@ const RootLayout = () => {
                 }}
               />
               <Stack.Screen
+                name="modals/workoutDetails"
+                options={{
+                  headerShown: false,
+                  navigationBarHidden: true,
+                  presentation: "transparentModal",
+                  animation: "fade",
+                  contentStyle: { backgroundColor: "transparent" },
+                }}
+              />
+              <Stack.Screen
+                name="modals/workoutCompleted"
+                options={{
+                  headerShown: false,
+                  navigationBarHidden: true,
+                  presentation: "transparentModal",
+                  animation: "fade",
+                  contentStyle: { backgroundColor: "transparent" },
+                }}
+              />
+              <Stack.Screen
                 name="calendar"
                 options={{
                   headerShown: false,

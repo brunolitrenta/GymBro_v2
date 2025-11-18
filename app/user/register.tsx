@@ -806,11 +806,11 @@ const Register = () => {
               <Pressable
                 disabled={!isValid || isLoading}
                 className={`w-full h-12 mb-4 ${
-                  !isValid || isLoading ? "bg-grayish opacity-50" : "bg-secondary"
-                } rounded-2xl justify-center items-center`}
+                  !isValid || isLoading ? "bg-secondary/30 opacity-50" : "bg-darkgreen"
+                } rounded-3xl justify-center items-center shadow-md`}
                 onPress={handleSubmit(onSubmit)}
               >
-                <Text className="text-white text-base font-rsemi">
+                <Text className="text-white text-base font-rbold">
                   {isLoading ? "Registrando..." : "Registrar"}
                 </Text>
               </Pressable>
@@ -827,7 +827,7 @@ const Register = () => {
           <Text className="text-xs font-rregular text-gray-600 text-center">
             Já possui conta?{" "}
             <Text
-              className="text-xs font-rsemi text-lightgreen"
+              className="text-xs font-rsemi text-darkgreen"
               onPress={() => router.push("/user/login")}
             >
               Entrar

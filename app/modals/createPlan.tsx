@@ -47,43 +47,35 @@ const CreatePlan = () => {
   };
 
   return (
-    <View className="flex-1 items-center justify-center bg-transparent">
+    <View className="flex-1 items-center justify-center bg-black/50">
       <Pressable
         android_disableSound
         onPress={() => router.back()}
-        className="w-full h-full bg-black opacity-50 fixed"
+        className="w-full h-full absolute"
       />
-      <View className="bg-primary w-11/12 rounded-2xl items-center py-6 gap-4 absolute">
-        <View className="flex-row w-5/6 justify-between items-center mb-2">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="h-12 w-10 items-center justify-center"
-          >
-            <FontAwesome6 name="arrow-left" size={32} color="black" />
-          </TouchableOpacity>
-          <Text className="text-3xl font-rsemi">Novo plano</Text>
-          <FontAwesome6 name="file-invoice" size={32} color="black" />
+      <View className="bg-white w-11/12 rounded-3xl py-8 px-6 shadow-2xl">
+        <View className="items-center mb-6">
+          <View className="bg-darkgreen/10 w-16 h-16 rounded-2xl items-center justify-center mb-4">
+            <FontAwesome6 name="file-invoice" size={28} color="#D5D962" />
+          </View>
+          <Text className="text-3xl font-rbold text-secondary">Novo Plano</Text>
+          <Text className="text-sm font-rregular text-secondary/60 mt-1">Crie um novo plano de treino</Text>
         </View>
 
-        <View className="w-5/6">
-          <Text className="text-black font-rsemi mb-1">Nome do plano</Text>
+        <View className="mb-6">
+          <Text className="text-darkgreen font-rsemi text-sm mb-2">NOME DO PLANO</Text>
           <Controller
             control={control}
             name="name"
             render={({ field: { onChange, onBlur, value } }) => {
               const [focused, setFocused] = useState(false);
-              const baseInputClass =
-                "w-full h-12 bg-white rounded-xl px-4 py-0 font-rregular text-black border";
-              const borderClass = errors.name
-                ? "border-red-600"
-                : focused
-                ? "border-stronggreen"
-                : "border-black/30";
               return (
                 <TextInput
-                  placeholder="Digite o nome do plano"
-                  placeholderTextColor="#555"
-                  className={`${baseInputClass} ${borderClass}`}
+                  placeholder="Ex: Treino de Hipertrofia"
+                  placeholderTextColor="#999"
+                  className={`bg-secondary/5 border-2 rounded-2xl px-4 py-3 font-rregular text-base text-secondary ${
+                    errors.name ? "border-red-500" : focused ? "border-darkgreen" : "border-secondary/10"
+                  }`}
                   onBlur={() => {
                     onBlur();
                     setFocused(false);
@@ -99,23 +91,31 @@ const CreatePlan = () => {
             }}
           />
           {errors.name && (
-            <Text className="text-red-600 mt-1 font-rregular text-sm">
+            <Text className="text-red-500 mt-2 font-rregular text-xs">
               {errors.name.message}
             </Text>
           )}
         </View>
 
-        <TouchableOpacity
-          disabled={isSubmitting || isLoading}
-          onPress={handleSubmit(onSubmit)}
-          className={`w-5/6 py-4 rounded-full mt-2 items-center ${
-            isSubmitting || isLoading ? "bg-grayish opacity-50" : "bg-stronggreen"
-          }`}
-        >
-          <Text className="text-black font-rsemi text-lg">
-            {isSubmitting || isLoading ? "Salvando..." : "Criar plano"}
-          </Text>
-        </TouchableOpacity>
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="flex-1 bg-secondary/10 py-4 rounded-2xl items-center"
+          >
+            <Text className="text-secondary font-rsemi text-base">Cancelar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={isSubmitting || isLoading}
+            onPress={handleSubmit(onSubmit)}
+            className={`flex-1 bg-darkgreen py-4 rounded-2xl items-center ${
+              isSubmitting || isLoading ? "opacity-50" : ""
+            }`}
+          >
+            <Text className="text-white font-rbold text-base">
+              {isSubmitting || isLoading ? "Salvando..." : "Criar"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

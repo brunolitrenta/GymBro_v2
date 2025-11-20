@@ -99,14 +99,13 @@ const WorkoutPlan = () => {
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() + dayOffset);
 
-    // Formata a data para comparação (YYYY-MM-DD)
-    const targetDateStr = targetDate.toISOString().split("T")[0];
+    const targetDateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
 
-    // Procura uma sessão de treino para essa data
     const session = workoutSessions.find((s: any) => {
       if (!s.finishedAt) return false;
-      const sessionDate = new Date(s.finishedAt).toISOString().split("T")[0];
-      return sessionDate === targetDateStr;
+      const sessionDate = new Date(s.finishedAt);
+      const sessionDateStr = `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}`;
+      return sessionDateStr === targetDateStr;
     });
 
     return session?.workout?.name || "-";
@@ -200,7 +199,6 @@ const WorkoutPlan = () => {
           />
         }
       >
-        {/* Header */}
         <View className="w-full px-6 mb-6">
           <View className="flex-row justify-between items-center mb-2">
             <TouchableOpacity
@@ -229,7 +227,6 @@ const WorkoutPlan = () => {
           </Text>
           <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
         </View>
-        {/* Calendar Section */}
         <View className="w-full px-6 mb-8">
           <View className="flex-row items-center mb-3">
             <AntDesign name="calendar" size={20} color="#D5D962" />
@@ -272,7 +269,6 @@ const WorkoutPlan = () => {
             </Pressable>
           </Link>
         </View>
-        {/* Workouts Section */}
         <View className="w-full px-6">
           {isLoading ? (
             <View
@@ -302,7 +298,12 @@ const WorkoutPlan = () => {
                 asChild
                 href={{
                   pathname: "/modals/createWorkout",
-                  params: { planId: planId },
+                  params: { 
+                    planId: planId,
+                    existingWorkoutNames: JSON.stringify(
+                      workoutsToDisplay.map(w => w.name)
+                    ),
+                  },
                 }}
               >
                 <TouchableOpacity className="bg-darkgreen px-6 py-3 rounded-2xl shadow-md active:opacity-80">
@@ -330,7 +331,12 @@ const WorkoutPlan = () => {
                   asChild
                   href={{
                     pathname: "/modals/createWorkout",
-                    params: { planId: planId },
+                    params: { 
+                      planId: planId,
+                      existingWorkoutNames: JSON.stringify(
+                        workoutsToDisplay.map(w => w.name)
+                      ),
+                    },
                   }}
                 >
                   <TouchableOpacity className="bg-darkgreen w-12 h-12 rounded-2xl justify-center items-center shadow-md active:opacity-80">

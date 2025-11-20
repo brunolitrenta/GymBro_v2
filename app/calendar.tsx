@@ -2,8 +2,12 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { months, weekDays } from "../constants/Calendar";
-import { FontAwesome, FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
-import { Link, router } from "expo-router";
+import {
+  FontAwesome,
+  FontAwesome6,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
+import { Link, router, useFocusEffect } from "expo-router";
 import { useAuth } from "@/hooks/authContext";
 import api from "@/utils/axiosConfig";
 
@@ -14,25 +18,46 @@ const Calendario = () => {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [daysInMonth, setDaysInMonth] = useState<number[]>([]);
   const [workoutSessions, setWorkoutSessions] = useState<any[]>([]);
+  const [streakCount, setStreakCount] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
 
   const monthName = months[currentMonth];
 
-  useEffect(() => {
-    const fetchWorkoutSessions = async () => {
-      if (!userId) return;
-      
-      try {
-        const response = await api.get(`/workout/session/all/${userId}`, {
-          headers: { "X-Silent": "true" },
-        });
-        setWorkoutSessions(response.data.data || []);
-      } catch (error) {
-        console.error("Erro ao buscar sessões de treino:", error);
-      }
-    };
-    
-    fetchWorkoutSessions();
-  }, [userId]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchWorkoutSessions = async () => {
+        if (!userId) return;
+
+        try {
+          Promise.allSettled([
+            api.get(`/workout/session/all/${userId}`, {
+              headers: { "X-Silent": "true" },
+            }),
+            api.get(`/users/workout-streak/${userId}`, {
+              headers: { "X-Silent": "true" },
+            }),
+          ]).then((response) => {
+            if (response[0].status === "fulfilled") {
+              setWorkoutSessions(response[0].value.data.data || []);
+            } else {
+              setWorkoutSessions([]);
+            }
+            if (response[1].status === "fulfilled") {
+              setStreakCount(response[1].value.data.data.currentStreak || 0);
+              setLongestStreak(response[1].value.data.data.longestStreak || 0);
+            } else {
+              setStreakCount(0);
+              setLongestStreak(0);
+            }
+          });
+        } catch (error) {
+          console.error("Erro ao buscar sessões de treino:", error);
+        }
+      };
+
+      fetchWorkoutSessions();
+    }, [userId])
+  );
 
   const getFirstDayOfWeek = useCallback(
     (year: number, month: number): number => {
@@ -76,14 +101,14 @@ const Calendario = () => {
 
   const getWorkoutForDay = (year: number, month: number, day: number): any => {
     const targetDate = new Date(year, month, day);
-    const targetDateStr = targetDate.toISOString().split('T')[0];
-    
+    const targetDateStr = targetDate.toISOString().split("T")[0];
+
     const session = workoutSessions.find((s: any) => {
       if (!s.finishedAt) return false;
-      const sessionDate = new Date(s.finishedAt).toISOString().split('T')[0];
+      const sessionDate = new Date(s.finishedAt).toISOString().split("T")[0];
       return sessionDate === targetDateStr;
     });
-    
+
     return session || null;
   };
 
@@ -95,8 +120,10 @@ const Calendario = () => {
         day === today.getDate() &&
         currentMonth === today.getMonth() &&
         currentYear === today.getFullYear();
-      
-      const workout = day ? getWorkoutForDay(currentYear, currentMonth, day) : null;
+
+      const workout = day
+        ? getWorkoutForDay(currentYear, currentMonth, day)
+        : null;
 
       return (
         <View
@@ -112,10 +139,10 @@ const Calendario = () => {
                     pathname: "/modals/workoutDetails",
                     params: {
                       workoutName: workout.workout?.name,
-                      planName: workout.workout?.plan?.name || '',
+                      planName: workout.workout?.plan?.name || "",
                       startedAt: workout.startedAt,
                       finishedAt: workout.finishedAt,
-                      notes: workout.notes || '',
+                      notes: workout.notes || "",
                     },
                   }}
                 >
@@ -150,9 +177,11 @@ const Calendario = () => {
                 </TouchableOpacity>
               )}
               {workout && (
-                <View className={`w-1.5 h-1.5 rounded-full mt-1 ${
-                  isToday ? "bg-stronggreen" : "bg-darkgreen"
-                }`} />
+                <View
+                  className={`w-1.5 h-1.5 rounded-full mt-1 ${
+                    isToday ? "bg-stronggreen" : "bg-darkgreen"
+                  }`}
+                />
               )}
             </View>
           ) : (
@@ -180,7 +209,7 @@ const Calendario = () => {
         <Text className="font-rbold text-4xl color-textcolor">Calendário</Text>
         <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
       </View>
-      
+
       <View className="px-6 mb-6">
         <View className="bg-white rounded-3xl p-5 shadow-md">
           <View className="flex-row justify-around">
@@ -188,22 +217,38 @@ const Calendario = () => {
               <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
                 <FontAwesome6 name="dumbbell" size={20} color="#D5D962" />
               </View>
-              <Text className="font-rbold text-2xl text-secondary">X</Text>
-              <Text className="font-rregular text-xs text-secondary/60">treinos</Text>
-            </View>
-            <View className="items-center">
-              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
-                <FontAwesome6 name="bullseye" size={20} color="#D5D962" />
-              </View>
-              <Text className="font-rbold text-2xl text-secondary">X</Text>
-              <Text className="font-rregular text-xs text-secondary/60">metas</Text>
+              <Text className="font-rbold text-2xl text-secondary">
+                {workoutSessions.length}
+              </Text>
+              <Text className="font-rregular text-xs text-secondary/60">
+                treinos
+              </Text>
             </View>
             <View className="items-center">
               <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
                 <FontAwesome6 name="fire" size={20} color="#D5D962" />
               </View>
-              <Text className="font-rbold text-2xl text-secondary">X</Text>
-              <Text className="font-rregular text-xs text-secondary/60">streaks</Text>
+              <Text className="font-rbold text-2xl text-secondary">
+                {streakCount}
+              </Text>
+              <Text className="font-rregular text-xs text-secondary/60">
+                em streak
+              </Text>
+            </View>
+            <View className="items-center">
+              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
+                <MaterialCommunityIcons
+                  name="clock"
+                  size={24}
+                  color="#D5D962"
+                />
+              </View>
+              <Text className="font-rbold text-2xl text-secondary">
+                {longestStreak}
+              </Text>
+              <Text className="font-rregular text-xs text-secondary/60">
+                maior streak
+              </Text>
             </View>
           </View>
         </View>
@@ -211,7 +256,7 @@ const Calendario = () => {
       <View className="px-6 flex-1">
         <View className="bg-white rounded-3xl p-5 shadow-md">
           <View className="w-full flex-row justify-between items-center mb-6">
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handlePrevMonth}
               className="bg-darkgreen/10 w-10 h-10 rounded-2xl items-center justify-center"
             >
@@ -220,7 +265,7 @@ const Calendario = () => {
             <Text className="text-xl font-rbold text-secondary">
               {monthName} {currentYear}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleNextMonth}
               className="bg-darkgreen/10 w-10 h-10 rounded-2xl items-center justify-center"
             >
@@ -229,7 +274,11 @@ const Calendario = () => {
           </View>
           <View className="w-full flex-row justify-around mb-3">
             {weekDays.map((weekDay, idx) => (
-              <Text key={idx} className="w-10 text-center text-xs font-rsemi text-secondary/60" numberOfLines={1}>
+              <Text
+                key={idx}
+                className="w-10 text-center text-xs font-rsemi text-secondary/60"
+                numberOfLines={1}
+              >
                 {weekDay}
               </Text>
             ))}

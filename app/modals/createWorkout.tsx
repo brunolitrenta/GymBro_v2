@@ -19,7 +19,7 @@ import CustomAlert from "./customAlert";
 import api from "@/utils/axiosConfig";
 
 const CreateWorkout = () => {
-  const { planId } = useLocalSearchParams();
+  const { planId, existingWorkoutNames } = useLocalSearchParams();
 
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
 
@@ -97,8 +97,18 @@ const CreateWorkout = () => {
   }
 
   useEffect(() => {
-    labelsSelecionadas([]);
-  }, []);
+    if (existingWorkoutNames) {
+      try {
+        const parsedNames = JSON.parse(existingWorkoutNames as string);
+        setButtonsDisabled(parsedNames);
+      } catch (error) {
+        console.error("Erro ao parsear nomes dos treinos:", error);
+        setButtonsDisabled([]);
+      }
+    } else {
+      setButtonsDisabled([]);
+    }
+  }, [existingWorkoutNames]);
 
   function renderExercise({ item }: { item: any }) {
     const foundId = selectedId.find((id) => id === item.id);

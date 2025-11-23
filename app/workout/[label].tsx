@@ -16,12 +16,14 @@ import {
 import { Entypo, FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
 import api from "@/utils/axiosConfig";
 import { useAuth } from "@/hooks/authContext";
-import CustomAlert from "@/app/modals/customAlert";
+import { eventEmitter } from "@/utils/eventEmitter";
 
 const DynamicWorkout = () => {
-  const { label, workoutId } = useLocalSearchParams<{
+  const { label, workoutId, planId, planName } = useLocalSearchParams<{
     label: string;
     workoutId: string;
+    planId: string;
+    planName: string;
   }>();
 
   const [exercisesCompleted, setExercisesCompleted] = useState<string[]>([]);
@@ -29,9 +31,20 @@ const DynamicWorkout = () => {
   const [isWorkoutBlocked, setIsWorkoutBlocked] = useState(false);
   const [hasActiveSession, setHasActiveSession] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [showFinishConfirmation, setShowFinishConfirmation] = useState(false);
 
   const { userId } = useAuth();
+
+  React.useEffect(() => {
+    const handleAlertConfirm = (data: any) => {
+      const { action } = data;
+      if (action === 'finishWorkout') {
+        handleFinishWorkout();
+      }
+    };
+
+    eventEmitter.on('customAlertConfirm', handleAlertConfirm);
+    return () => eventEmitter.off('customAlertConfirm', handleAlertConfirm);
+  }, [sessionId, userId]);
 
   const fetchWorkoutData = useCallback(async () => {
     if (!workoutId) {
@@ -126,7 +139,6 @@ const DynamicWorkout = () => {
         sessionId,
         userId,
       });
-      setShowFinishConfirmation(false);
       fetchWorkoutData();
       
       // Navega para o modal de conclusão
@@ -137,6 +149,20 @@ const DynamicWorkout = () => {
     } catch (error) {
       console.error("Erro ao finalizar treino:", error);
     }
+  };
+
+  const confirmFinishWorkout = () => {
+    router.push({
+      pathname: "/modals/customAlert",
+      params: {
+        title: "Finalizar treino",
+        message: "Tem certeza que deseja finalizar este treino?",
+        iconName: "dumbbell",
+        confirmText: "Finalizar",
+        cancelText: "Cancelar",
+        action: "finishWorkout",
+      },
+    });
   };
 
   function renderExercise({ item }: { item: any }) {
@@ -200,30 +226,10 @@ const DynamicWorkout = () => {
   }
 
   return (
-    <>
-      <CustomAlert
-        visible={showFinishConfirmation}
-        title="Finalizar treino"
-        message="Tem certeza que deseja finalizar este treino?"
-        iconName="dumbbell"
-        onClose={() => setShowFinishConfirmation(false)}
-        actions={[
-          {
-            text: "Cancelar",
-            style: "cancel",
-            onPress: () => setShowFinishConfirmation(false),
-          },
-          {
-            text: "Finalizar",
-            style: "destructive",
-            onPress: handleFinishWorkout,
-          },
-        ]}
-      />
-      <SafeAreaView
-        edges={["top"]}
-        className="flex-1 bg-primary"
-      >
+    <SafeAreaView
+      edges={["top"]}
+      className="flex-1 bg-primary"
+    >
         <View className="px-6 pt-4 pb-6">
           <View className="flex-row justify-between items-center mb-2">
             <TouchableOpacity
@@ -236,7 +242,7 @@ const DynamicWorkout = () => {
               asChild
               href={{
                 pathname: "/modals/workoutOptions",
-                params: { label: label },
+                params: { label: label, workoutId: workoutId, planId: planId, planName: planName },
               }}
             >
               <TouchableOpacity className="h-12 w-12 items-center justify-center bg-secondary/10 rounded-2xl">
@@ -297,7 +303,7 @@ const DynamicWorkout = () => {
             </View>
           ) : hasActiveSession ? (
             <TouchableOpacity
-              onPress={() => setShowFinishConfirmation(true)}
+              onPress={confirmFinishWorkout}
               disabled={exercisesCompleted.length === 0}
               activeOpacity={0.7}
               className={`bg-red-500 rounded-3xl p-5 shadow-lg flex-row items-center justify-center gap-3 ${
@@ -319,7 +325,6 @@ const DynamicWorkout = () => {
           )}
         </View>
       </SafeAreaView>
-    </>
   );
 };
 

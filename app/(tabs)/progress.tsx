@@ -1,8 +1,42 @@
 import { Text, View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome6 } from "@expo/vector-icons";
+import { useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { useAuth } from "@/hooks/authContext";
+import api from "@/utils/axiosConfig";
 
 const Progress = () => {
+  const { userId } = useAuth();
+  const [progressData, setProgressData] = useState<any>(null);
+  const [logsData, setLogsData] = useState<any>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchProgressData = async () => {
+        if (!userId) return;
+
+        try {
+          const [progressResponse, logsResponse] = await Promise.all([
+            api.get(`/users/progress/${userId}`),
+            api.get(`/users/progress/logs/${userId}`)
+          ]);
+
+          const progress = progressResponse.data?.data;
+          const logs = logsResponse.data?.data;
+
+          setProgressData(progress);
+          setLogsData(logs);
+        } catch (error) {
+          console.error("Erro ao buscar dados de progresso:", error);
+        }
+      };
+
+      fetchProgressData();
+    }, [userId])
+  );
+
   return (
     <SafeAreaView
       edges={["top"]}
@@ -20,7 +54,6 @@ const Progress = () => {
           <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
         </View>
 
-        {/* Stats Cards */}
         <View className="px-6 mb-6">
           <View className="flex-row gap-3 mb-3">
             <View className="flex-1 bg-white rounded-3xl p-5 shadow-md">
@@ -42,7 +75,7 @@ const Progress = () => {
               <Text className="text-secondary/60 font-rregular text-xs mb-1">
                 SEQUÊNCIA
               </Text>
-              <Text className="text-secondary font-rbold text-3xl">0</Text>
+              <Text className="text-secondary font-rbold text-3xl">{progressData?.currentStreak || 0}</Text>
               <Text className="text-secondary/60 font-rregular text-xs mt-1">
                 dias seguidos
               </Text>
@@ -50,7 +83,6 @@ const Progress = () => {
           </View>
         </View>
 
-        {/* Chart Placeholder */}
         <View className="px-6 mb-6">
           <Text className="text-secondary font-rbold text-xl mb-3">
             Atividade Semanal
@@ -65,7 +97,6 @@ const Progress = () => {
           </View>
         </View>
 
-        {/* Recent Workouts */}
         <View className="px-6">
           <Text className="text-secondary font-rbold text-xl mb-3">
             Treinos Recentes

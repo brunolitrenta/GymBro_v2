@@ -21,7 +21,6 @@ import { registerSchema } from "@/types/user";
 import api from "@/utils/axiosConfig";
 import { weekDays } from "@/constants/Calendar";
 import { useLoading } from "@/hooks/loadingContext";
-import CustomAlert from "../modals/customAlert";
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -33,9 +32,6 @@ const Register = () => {
     Dimensions.get("window").height
   );
   const { isLoading } = useLoading();
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
   const scrollViewRef = React.useRef<ScrollView>(null);
   const inputRefs = React.useRef<{ [key: string]: TextInput | null }>({});
   const {
@@ -134,20 +130,20 @@ const Register = () => {
         message = err.message;
       }
 
-      setAlertTitle("Erro");
-      setAlertMessage(message);
-      setAlertVisible(true);
+      router.push({
+        pathname: "/modals/customAlert",
+        params: {
+          title: "Erro",
+          message: message,
+          iconName: "triangle-exclamation",
+          confirmText: "Entendi",
+        },
+      });
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-primary">
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
@@ -237,17 +233,17 @@ const Register = () => {
                     }`}
                   >
                     <Pressable
-                      disabled={isLoading}
+                      disabled={isLoading}    
                       className={`flex-1 h-12 rounded-2xl border ${
-                        value === "common"
+                        value === "normal"
                           ? "bg-lightgreen border-lightgreen"
                           : "bg-white border-gray-200"
                       } justify-center items-center mr-2`}
-                      onPress={() => onChange("common")}
+                      onPress={() => onChange("normal")}
                     >
                       <Text
                         className={`text-base font-rregular ${
-                          value === "common" ? "text-black" : "text-gray-600"
+                          value === "normal" ? "text-black" : "text-gray-600"
                         }`}
                       >
                         Comum
@@ -806,7 +802,9 @@ const Register = () => {
               <Pressable
                 disabled={!isValid || isLoading}
                 className={`w-full h-12 mb-4 ${
-                  !isValid || isLoading ? "bg-secondary/30 opacity-50" : "bg-darkgreen"
+                  !isValid || isLoading
+                    ? "bg-secondary/30 opacity-50"
+                    : "bg-darkgreen"
                 } rounded-3xl justify-center items-center shadow-md`}
                 onPress={handleSubmit(onSubmit)}
               >

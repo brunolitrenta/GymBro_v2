@@ -81,10 +81,7 @@ const Plans = () => {
   }, [fetchPlans]);
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      className="flex-1 bg-primary"
-    >
+    <SafeAreaView edges={["top"]} className="flex-1 bg-primary">
       <View className="px-6 pt-4 pb-6">
         <View className="flex-row justify-between items-center mb-2">
           <TouchableOpacity
@@ -99,7 +96,9 @@ const Plans = () => {
             </TouchableOpacity>
           </Link>
         </View>
-        <Text className="font-rbold text-4xl color-textcolor mt-2">Meus Planos</Text>
+        <Text className="font-rbold text-4xl color-textcolor mt-2">
+          Meus Planos
+        </Text>
         <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
       </View>
 
@@ -135,7 +134,7 @@ const Plans = () => {
                   Seus Planos de Treino
                 </Text>
                 <Text className="text-secondary/60 font-rregular text-sm">
-                  {plans.length} {plans.length === 1 ? 'plano' : 'planos'}
+                  {plans.length} {plans.length === 1 ? "plano" : "planos"}
                 </Text>
               </View>
               <View className="gap-4">
@@ -189,14 +188,16 @@ const Plans = () => {
                 <Text className="font-rregular text-center text-secondary/60 mb-6 px-4">
                   Crie seu primeiro plano de treino para começar
                 </Text>
-                <Link asChild href="/modals/createPlan" >
+                <Link asChild href="/modals/createPlan">
                   <TouchableOpacity
                     className="bg-darkgreen px-6 py-3 rounded-2xl shadow-md active:opacity-80"
                     activeOpacity={0.9}
                   >
                     <View className="flex-row items-center gap-2">
                       <FontAwesome6 name="plus" size={18} color="white" />
-                      <Text className="font-rsemi text-white text-base">Criar Plano</Text>
+                      <Text className="font-rsemi text-white text-base">
+                        Criar Plano
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 </Link>

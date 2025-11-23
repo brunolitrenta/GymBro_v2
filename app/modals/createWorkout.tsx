@@ -15,7 +15,6 @@ import { workoutLabels } from "@/constants/workoutLabels";
 import { bodyAreas } from "@/constants/BodyAreas";
 import { ISaveWorkout } from "@/interfaces/ISaveWorkout";
 import { useLoading } from "@/hooks/loadingContext";
-import CustomAlert from "./customAlert";
 import api from "@/utils/axiosConfig";
 
 const CreateWorkout = () => {
@@ -30,10 +29,6 @@ const CreateWorkout = () => {
   const [buttonsDisabled, setButtonsDisabled] = useState<string[]>([]);
 
   const [workoutData, setWorkoutData] = useState<any[]>([]);
-
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
@@ -63,9 +58,15 @@ const CreateWorkout = () => {
 
 
   function showAlert(title: string, message: string) {
-    setAlertTitle(title);
-    setAlertMessage(message);
-    setAlertVisible(true);
+    router.push({
+      pathname: "/modals/customAlert",
+      params: {
+        title,
+        message,
+        iconName: "triangle-exclamation",
+        confirmText: "Entendi",
+      },
+    });
   }
 
   async function addWorkout() {
@@ -191,12 +192,6 @@ const CreateWorkout = () => {
     <View
       className="flex-1 justify-center items-center bg-black/50"
     >
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-      />
       <Pressable
         android_disableSound
         onPress={() => router.back()}

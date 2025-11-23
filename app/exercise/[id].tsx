@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { exerciseFormSchema, ExerciseFormData } from "@/types/exercise";
 import { useLoading } from "@/hooks/loadingContext";
 import api from "@/utils/axiosConfig";
-import CustomAlert from "../modals/customAlert";
 import { useAuth } from "@/hooks/authContext";
 
 const exercisePage = () => {
@@ -33,10 +32,6 @@ const exercisePage = () => {
   const sessionActive = hasActiveSession === "true";
   const completed = isCompleted === "true";
   const isButtonDisabled = workoutBlocked || !sessionActive || completed;
-
-  const [alertVisible, setAlertVisible] = React.useState(false);
-  const [alertTitle, setAlertTitle] = React.useState("");
-  const [alertMessage, setAlertMessage] = React.useState("");
 
   const {
     control,
@@ -97,9 +92,15 @@ const exercisePage = () => {
         message = err.message;
       }
 
-      setAlertTitle("Erro");
-      setAlertMessage(message);
-      setAlertVisible(true);
+      router.push({
+        pathname: "/modals/customAlert",
+        params: {
+          title: "Erro",
+          message: message,
+          iconName: "triangle-exclamation",
+          confirmText: "Entendi",
+        },
+      });
     }
   };
 
@@ -108,17 +109,6 @@ const exercisePage = () => {
       edges={["top"]}
       className="flex-1 bg-primary"
     >
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-        actions={
-          alertTitle === "Sucesso"
-            ? [{ text: "OK", onPress: () => router.back() }]
-            : undefined
-        }
-      />
       <View className="px-6 pt-4 pb-6">
         <View className="flex-row justify-between items-center mb-4">
           <TouchableOpacity

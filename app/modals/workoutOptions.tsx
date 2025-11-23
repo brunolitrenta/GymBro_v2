@@ -1,62 +1,75 @@
 import { View, Text, Pressable, Dimensions } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome6 } from "@expo/vector-icons";
-import CustomAlert from "./customAlert";
+import { eventEmitter } from "@/utils/eventEmitter";
+import api from "@/utils/axiosConfig";
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const WorkoutOptions = () => {
-  const { label } = useLocalSearchParams();
+  const { label, workoutId, planId, planName } = useLocalSearchParams<{
+    label: string;
+    workoutId: string;
+    planId: string;
+    planName: string;
+  }>();
 
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
+  useEffect(() => {
+    const handleAlertConfirm = (data: any) => {
+      const { action } = data;
+      if (action === "deleteWorkout") {
+        deleteWorkout();
+      }
+    };
+
+    eventEmitter.on("customAlertConfirm", handleAlertConfirm);
+    return () => eventEmitter.off("customAlertConfirm", handleAlertConfirm);
+  }, [workoutId]);
 
   const confirmRemoval = () => {
-    setAlertTitle("Atenção");
-    setAlertMessage(
-      "Você tem certeza que deseja excluir este treino? Essa ação será irreversível."
-    );
-    setAlertVisible(true);
+    router.push({
+      pathname: "/modals/customAlert",
+      params: {
+        title: "Atenção",
+        message:
+          "Você tem certeza que deseja excluir este treino? Essa ação será irreversível.",
+        iconName: "triangle-exclamation",
+        confirmText: "Excluir",
+        cancelText: "Cancelar",
+        action: "deleteWorkout",
+      },
+    });
   };
 
-  function deleteWorkout() {
-    // TODO: Implementar lógica de exclusão de treino via API
-    router.back();
+  async function deleteWorkout() {
+    try {
+      await api.delete(`/workout/${workoutId}`);
+      eventEmitter.emit('workoutDeleted');
+      router.back();
+      setTimeout(() => {
+        router.back();
+      }, 50);
+    } catch (error) {
+      console.error('Erro ao excluir treino:', error);
+    }
   }
 
   return (
-    <View
-      className="flex-1 bg-transparent"
-    >
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-        actions={[
-          { text: "Cancelar", style: "cancel" },
-          {
-            text: "Excluir",
-            onPress: () => deleteWorkout(),
-            style: "destructive",
-          },
-        ]}
-      />
+    <View className="flex-1 bg-transparent">
       <Pressable
         android_disableSound
         onPress={() => router.back()}
         className="h-full w-full"
       />
-      <View 
-        className="bg-white rounded-2xl shadow-2xl overflow-hidden" 
+      <View
+        className="bg-white rounded-2xl shadow-2xl overflow-hidden"
         style={{
-          position: 'absolute', 
-          top: 70, 
-          right: 20, 
+          position: "absolute",
+          top: 70,
+          right: 20,
           width: 180,
-          shadowColor: '#000',
+          shadowColor: "#000",
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 8,

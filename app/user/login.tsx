@@ -20,7 +20,6 @@ import { useAuth } from "@/hooks/authContext";
 import { useLoading } from "@/hooks/loadingContext";
 import { router } from "expo-router";
 import { loginSchema } from "@/types/user";
-import CustomAlert from "../modals/customAlert";
 
 type LoginForm = z.infer<typeof loginSchema>;
 
@@ -32,9 +31,6 @@ const Login = () => {
   );
   const { login } = useAuth();
   const { isLoading } = useLoading();
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
   const {
     control,
     handleSubmit,
@@ -78,20 +74,20 @@ const Login = () => {
       await login(data.email.trim(), data.password.trim());
       router.replace("/(tabs)");
     } catch (error) {
-      setAlertTitle("Erro");
-      setAlertMessage(error instanceof Error ? error.message : "Ocorreu um erro inesperado");
-      setAlertVisible(true);
+      router.push({
+        pathname: "/modals/customAlert",
+        params: {
+          title: "Erro",
+          message: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
+          iconName: "triangle-exclamation",
+          confirmText: "Entendi",
+        },
+      });
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-primary">
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : undefined}

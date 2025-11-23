@@ -29,12 +29,15 @@ const Calendario = () => {
         if (!userId) return;
 
         try {
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          
           Promise.allSettled([
             api.get(`/workout/session/all/${userId}`, {
               headers: { "X-Silent": "true" },
             }),
             api.get(`/users/workout-streak/${userId}`, {
               headers: { "X-Silent": "true" },
+              params: { timezone },
             }),
           ]).then((response) => {
             if (response[0].status === "fulfilled") {
@@ -100,13 +103,14 @@ const Calendario = () => {
   };
 
   const getWorkoutForDay = (year: number, month: number, day: number): any => {
-    const targetDate = new Date(year, month, day);
-    const targetDateStr = targetDate.toISOString().split("T")[0];
-
     const session = workoutSessions.find((s: any) => {
       if (!s.finishedAt) return false;
-      const sessionDate = new Date(s.finishedAt).toISOString().split("T")[0];
-      return sessionDate === targetDateStr;
+      const sessionDate = new Date(s.finishedAt);
+      return (
+        sessionDate.getFullYear() === year &&
+        sessionDate.getMonth() === month &&
+        sessionDate.getDate() === day
+      );
     });
 
     return session || null;

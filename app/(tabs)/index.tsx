@@ -27,8 +27,10 @@ const Index = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [completionRate, setCompletionRate] = useState(0);
   const [monthlyData, setMonthlyData] = useState<number[]>([]);
+  const [totalPossibleSessions, setTotalPossibleSessions] = useState(0);
   const [daysLabels, setDaysLabels] = useState<string[]>([]);
   const [currentStreak, setCurrentStreak] = useState(0);
+  const [trainableDaysData, setTrainableDaysData] = useState<number[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -36,14 +38,19 @@ const Index = () => {
         if (!userId) return;
 
         try {
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
           const result = await api.get(`/users/main/${userId}`, {
             headers: { "X-Silent": "true" },
+            params: { timezone },
           });
-          setMonthSessions(result.data?.data.monthSessions || 0);
-          setCompletionRate(result.data?.data.completionRate || 0);
-          setCurrentStreak(result.data?.data.currentStreak || 0);
-          const completedSessions = result.data?.data.completedSessions || [];
-          setSessions(completedSessions);
+          
+          const data = result.data?.data || {};
+          const monthSessionsValue = data.monthSessions || 0;
+          const completionRateValue = data.completionRate || 0;
+          const currentStreakValue = data.currentStreak || 0;
+          const totalPossibleSessionsValue = data.totalPossibleSessions || 0;
+          const completedSessions = data.completedSessions || [];
 
           const today = new Date();
           const currentMonth = today.getMonth();
@@ -65,7 +72,9 @@ const Index = () => {
                 sessionDate.getFullYear() === currentYear
               ) {
                 const dayOfMonth = sessionDate.getDate() - 1;
-                dailyCounts[dayOfMonth]++;
+                if (dayOfMonth >= 0 && dayOfMonth < daysInMonth) {
+                  dailyCounts[dayOfMonth]++;
+                }
               }
             }
           });
@@ -74,10 +83,43 @@ const Index = () => {
             labels.push(i % 5 === 0 || i === 1 ? i.toString() : "");
           }
 
-          setMonthlyData(dailyCounts);
+          const trainableDays = new Array(daysInMonth)
+            .fill(0)
+            .map((_, index) => {
+              const daysPassed = index + 1;
+              return Math.min(
+                daysPassed * (totalPossibleSessionsValue / 30),
+                totalPossibleSessionsValue
+              );
+            });
+
+          const cumulativeWorkouts = dailyCounts.reduce(
+            (acc: number[], count, index) => {
+              const previousTotal = index > 0 ? acc[index - 1] : 0;
+              acc.push(previousTotal + count);
+              return acc;
+            },
+            []
+          );
+
+          setMonthSessions(monthSessionsValue);
+          setCompletionRate(completionRateValue);
+          setCurrentStreak(currentStreakValue);
+          setTotalPossibleSessions(totalPossibleSessionsValue);
+          setSessions(completedSessions);
+          setMonthlyData(cumulativeWorkouts);
+          setTrainableDaysData(trainableDays);
           setDaysLabels(labels);
         } catch (error) {
           console.error("Erro ao buscar informações principais:", error);
+          setMonthSessions(0);
+          setCompletionRate(0);
+          setCurrentStreak(0);
+          setTotalPossibleSessions(0);
+          setSessions([]);
+          setMonthlyData([]);
+          setTrainableDaysData([]);
+          setDaysLabels([]);
         }
       };
 
@@ -278,7 +320,8 @@ const Index = () => {
                     width={Dimensions.get("window").width - 80}
                     height={220}
                     xLabel="Dia do Mês"
-                    yLabel="Treinos"
+                    yLabel="Treinos esperados"
+                    trainableDays={trainableDaysData}
                   />
                 )}
               </View>

@@ -9,23 +9,32 @@ interface LineChartProps {
   height: number;
   xLabel?: string;
   yLabel?: string;
+  trainableDays?: number[]; // Nova prop para dias treináveis
 }
 
-export const LineChart: React.FC<LineChartProps> = ({ data, labels, width, height, xLabel = '', yLabel = '' }) => {
+export const LineChart: React.FC<LineChartProps> = ({ data, labels, width, height, xLabel = '', yLabel = '', trainableDays }) => {
   const padding = 40;
   const chartWidth = width - padding * 2;
   const chartHeight = height - padding * 2;
   
-  // Encontrar valores máximo e mínimo
-  const maxValue = Math.max(...data, 1);
+  // Encontrar valores máximo e mínimo considerando ambas as linhas
+  const allValues = trainableDays ? [...data, ...trainableDays] : data;
+  const maxValue = Math.max(...allValues, 1);
   const minValue = 0;
   
-  // Calcular pontos para a linha
+  // Calcular pontos para a linha de treinos do usuário
   const points = data.map((value, index) => {
     const x = padding + (index / (data.length - 1 || 1)) * chartWidth;
     const y = padding + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
     return `${x},${y}`;
   }).join(' ');
+  
+  // Calcular pontos para a linha de dias treináveis
+  const trainablePoints = trainableDays ? trainableDays.map((value, index) => {
+    const x = padding + (index / (trainableDays.length - 1 || 1)) * chartWidth;
+    const y = padding + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
+    return `${x},${y}`;
+  }).join(' ') : '';
   
   // Linhas horizontais de grade
   const gridLines = [0, 0.25, 0.5, 0.75, 1].map(ratio => {
@@ -74,7 +83,20 @@ export const LineChart: React.FC<LineChartProps> = ({ data, labels, width, heigh
           </G>
         ))}
         
-        {/* Linha do gráfico */}
+        {/* Linha de dias treináveis (se fornecida) */}
+        {trainableDays && trainablePoints && (
+          <Polyline
+            points={trainablePoints}
+            fill="none"
+            stroke="rgba(213, 217, 98, 0.7)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="5,5"
+          />
+        )}
+        
+        {/* Linha do gráfico de treinos do usuário */}
         <Polyline
           points={points}
           fill="none"
@@ -83,23 +105,6 @@ export const LineChart: React.FC<LineChartProps> = ({ data, labels, width, heigh
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        
-        {/* Pontos no gráfico */}
-        {data.map((value, index) => {
-          const x = padding + (index / (data.length - 1 || 1)) * chartWidth;
-          const y = padding + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
-          return (
-            <Circle
-              key={index}
-              cx={x}
-              cy={y}
-              r="4"
-              fill="#364033"
-              stroke="#C8E6C9"
-              strokeWidth="2"
-            />
-          );
-        })}
         
         {/* Labels do eixo X */}
         {labels.map((label, index) => {

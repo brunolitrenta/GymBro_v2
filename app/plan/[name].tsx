@@ -145,6 +145,8 @@ const WorkoutPlan = () => {
           params: {
             label: item.name,
             workoutId: item.id,
+            planId: planId,
+            planName: planName,
           },
         }}
       >

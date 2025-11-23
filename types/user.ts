@@ -3,7 +3,7 @@ import z from "zod";
 export const registerSchema = z
   .object({
     name: z.string().min(2, "Nome obrigatório"),
-    userType: z.enum(["common", "trainer"], {
+    userType: z.enum(["normal", "trainer"], {
       message: "Selecione o tipo de usuário",
     }),
     gender: z
@@ -65,6 +65,10 @@ export const loginSchema = z.object({
 export const personalDataSchema = z.object({
   name: z.string().min(2, "Nome obrigatório"),
   email: z.string().email("E-mail inválido").nonempty("E-mail obrigatório"),
+  gender: z.enum(["M", "F", "O"], {
+    message: "Selecione o gênero",
+  }),
+  birthDate: z.string().regex(/^\d{2}\/\d{2}\/\d{4}$/, "Data inválida (DD/MM/AAAA)"),
   height: z
     .union([
       z.number().min(1, { message: "Altura deve ser maior que 0" }),

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,30 +11,39 @@ import {
   Platform,
   ScrollView,
   Keyboard,
+  ActivityIndicator,
 } from "react-native";
-import CustomAlert from "./modals/customAlert";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome6 } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { personalDataSchema } from "@/types/user";
+import { useAuth } from "@/hooks/authContext";
+import api from "@/utils/axiosConfig";
 
 type PersonalDataForm = z.infer<typeof personalDataSchema>;
 
 const ProfileOptions = () => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [originalData, setOriginalData] = useState<PersonalDataForm | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
   const scrollViewRef = React.useRef<ScrollView>(null);
   const inputRefs = React.useRef<{ [key: string]: TextInput | null }>({});
+  const { userId } = useAuth();
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
+    reset,
+    watch,
   } = useForm<PersonalDataForm>({
-    resolver: zodResolver(personalDataSchema),
     mode: "onChange",
     defaultValues: {
       name: "",
       email: "",
+      gender: undefined,
+      birthDate: "",
       height: undefined,
       weight: undefined,
       goal: undefined,
@@ -43,7 +52,7 @@ const ProfileOptions = () => {
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       () => {
@@ -63,9 +72,90 @@ const ProfileOptions = () => {
     };
   }, []);
 
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
+  useEffect(() => {
+    const subscription = watch((formData) => {
+      if (!originalData) return;
+      
+      const arraysEqual = (a: number[], b: number[]) => {
+        if (a.length !== b.length) return false;
+        const sortedA = [...a].sort();
+        const sortedB = [...b].sort();
+        return sortedA.every((val, idx) => val === sortedB[idx]);
+      };
+
+      const changed = 
+        formData.name !== originalData.name ||
+        formData.gender !== originalData.gender ||
+        formData.birthDate !== originalData.birthDate ||
+        formData.height !== originalData.height ||
+        formData.weight !== originalData.weight ||
+        formData.goal !== originalData.goal ||
+        !arraysEqual((formData.workoutDays || []).filter((d): d is number => d !== undefined), originalData.workoutDays || []) ||
+        formData.medical !== originalData.medical;
+
+      setHasChanges(changed);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, originalData]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoadingData(true);
+        const response = await api.get(`/users/${userId}`, {
+          headers: {
+            "X-Silent": "true",
+          },
+        });
+
+        const userData = response.data?.data;
+
+        if (userData) {
+          let formattedBirthDate = "";
+          if (userData.birthDate) {
+            const date = new Date(userData.birthDate);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const year = date.getFullYear();
+            formattedBirthDate = `${day}/${month}/${year}`;
+          }
+
+          const formData = {
+            name: userData.name || "",
+            email: userData.email || "",
+            gender: userData.gender || undefined,
+            birthDate: formattedBirthDate,
+            height: userData.height || undefined,
+            weight: userData.weight || undefined,
+            goal: userData.goal || undefined,
+            workoutDays: userData.workoutDays || [],
+            medical: userData.medical || "",
+          };
+
+          setOriginalData(formData);
+          reset(formData);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do usuário:", error);
+        router.push({
+          pathname: "/modals/customAlert",
+          params: {
+            title: "Erro",
+            message: "Não foi possível carregar os dados do usuário",
+            iconName: "triangle-exclamation",
+            confirmText: "Entendi",
+          },
+        });
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    if (userId) {
+      fetchUserData();
+    }
+  }, [userId, reset]);
 
   const focusInput = (inputKey: string) => {
     setTimeout(() => {
@@ -75,17 +165,33 @@ const ProfileOptions = () => {
 
   const onSubmit = async (data: PersonalDataForm) => {
     try {
-      // Aqui você pode fazer a chamada à API para salvar os dados
-      console.log("Dados a serem salvos:", data);
+      let isoDate = undefined;
+      if (data.birthDate) {
+        const [day, month, year] = data.birthDate.split("/");
+        const date = new Date(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day)
+        );
+        isoDate = date.toISOString();
+      }
 
-      setAlertTitle("Sucesso");
-      setAlertMessage("Dados pessoais salvos com sucesso!");
-      setAlertVisible(true);
+      const payload = {
+        name: data.name,
+        gender: data.gender,
+        birthDate: isoDate,
+        height: data.height,
+        weight: data.weight,
+        goal: data.goal,
+        workoutDays: data.workoutDays,
+        medical: data.medical,
+      };
+
+      await api.put(`/users/${userId}`, payload);
+
+      router.back();
     } catch (error) {
       console.error("Erro ao salvar dados:", error);
-      setAlertTitle("Erro");
-      setAlertMessage("Não foi possível salvar os dados pessoais");
-      setAlertVisible(true);
     }
   };
 
@@ -97,14 +203,38 @@ const ProfileOptions = () => {
 
   const weekDays = ["D", "S", "T", "Q", "Q", "S", "S"];
 
+  if (isLoadingData) {
+    return (
+      <SafeAreaView className="flex-1 bg-primary">
+        <View className="px-6 pt-4 pb-6">
+          <View className="flex-row justify-between items-center mb-2">
+            <Pressable
+              onPress={() => router.back()}
+              className="h-12 w-12 items-center justify-center bg-secondary/10 rounded-2xl"
+            >
+              <FontAwesome6 name="arrow-left" size={24} color="#2D3748" />
+            </Pressable>
+            <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center">
+              <FontAwesome6 name="user-large" size={24} color="#D5D962" />
+            </View>
+          </View>
+          <Text className="font-rbold text-4xl color-textcolor">
+            Dados Pessoais
+          </Text>
+          <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
+        </View>
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#D5D962" />
+          <Text className="text-textcolor font-rregular mt-4">
+            Carregando dados...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-primary">
-      <CustomAlert
-        visible={alertVisible}
-        title={alertTitle}
-        message={alertMessage}
-        onClose={() => setAlertVisible(false)}
-      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
@@ -122,7 +252,9 @@ const ProfileOptions = () => {
               <FontAwesome6 name="user-large" size={24} color="#D5D962" />
             </View>
           </View>
-          <Text className="font-rbold text-4xl color-textcolor">Dados Pessoais</Text>
+          <Text className="font-rbold text-4xl color-textcolor">
+            Dados Pessoais
+          </Text>
           <View className="h-1 w-16 bg-darkgreen rounded-full mt-2" />
         </View>
 
@@ -131,7 +263,7 @@ const ProfileOptions = () => {
           className="px-6"
           contentContainerStyle={{
             paddingBottom: keyboardVisible ? 300 : 80,
-            paddingTop: 16
+            paddingTop: 16,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -139,7 +271,6 @@ const ProfileOptions = () => {
           keyboardDismissMode="interactive"
           scrollEventThrottle={16}
         >
-          {/* Nome */}
           <Text className="text-sm font-rregular text-gray-600 mb-1">Nome</Text>
           <Controller
             control={control}
@@ -170,32 +301,29 @@ const ProfileOptions = () => {
             </Text>
           )}
 
-          {/* E-mail */}
           <Text className="text-sm font-rregular text-gray-600 mb-1">
             E-mail
           </Text>
           <Controller
             control={control}
             name="email"
-            render={({ field: { onChange, value } }) => (
+            render={({ field: { value } }) => (
               <TextInput
                 ref={(ref) => (inputRefs.current["email"] = ref)}
-                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                className={`w-full h-12 bg-gray-100 rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 opacity-60 ${
                   errors.email ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
                 placeholder="imalive@bahia.com"
                 placeholderTextColor="#9CA3AF"
                 value={value}
-                onChangeText={onChange}
+                editable={false}
                 autoCapitalize="none"
                 keyboardType="email-address"
                 autoComplete="email"
-                returnKeyType="next"
                 scrollEnabled={false}
                 multiline={false}
                 numberOfLines={1}
-                onSubmitEditing={() => focusInput("height")}
               />
             )}
           />
@@ -205,7 +333,119 @@ const ProfileOptions = () => {
             </Text>
           )}
 
-          {/* Altura */}
+          <Text className="text-sm font-rregular text-gray-600 mb-1">
+            Gênero
+          </Text>
+          <Controller
+            control={control}
+            name="gender"
+            render={({ field: { value, onChange } }) => (
+              <View
+                className={`flex flex-row justify-between ${
+                  errors.gender ? "mb-2" : "mb-3"
+                }`}
+              >
+                <Pressable
+                  className={`flex-1 h-12 rounded-2xl border mx-0.5 ${
+                    value === "M"
+                      ? "bg-lightgreen border-lightgreen"
+                      : "bg-white border-gray-200"
+                  } justify-center items-center`}
+                  onPress={() => onChange("M")}
+                >
+                  <Text
+                    className={`text-base font-rregular ${
+                      value === "M" ? "text-black" : "text-gray-600"
+                    }`}
+                  >
+                    Masculino
+                  </Text>
+                </Pressable>
+                <Pressable
+                  className={`flex-1 h-12 rounded-2xl border mx-0.5 ${
+                    value === "F"
+                      ? "bg-lightgreen border-lightgreen"
+                      : "bg-white border-gray-200"
+                  } justify-center items-center`}
+                  onPress={() => onChange("F")}
+                >
+                  <Text
+                    className={`text-base font-rregular ${
+                      value === "F" ? "text-black" : "text-gray-600"
+                    }`}
+                  >
+                    Feminino
+                  </Text>
+                </Pressable>
+                <Pressable
+                  className={`flex-1 h-12 rounded-2xl border mx-0.5 ${
+                    value === "O"
+                      ? "bg-lightgreen border-lightgreen"
+                      : "bg-white border-gray-200"
+                  } justify-center items-center`}
+                  onPress={() => onChange("O")}
+                >
+                  <Text
+                    className={`text-base font-rregular ${
+                      value === "O" ? "text-black" : "text-gray-600"
+                    }`}
+                  >
+                    Outro
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+          />
+          {errors.gender && (
+            <Text className="text-red-500 mb-3 text-sm">
+              {errors.gender.message}
+            </Text>
+          )}
+
+          <Text className="text-sm font-rregular text-gray-600 mb-1">
+            Data de Nascimento
+          </Text>
+          <Controller
+            control={control}
+            name="birthDate"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                ref={(ref) => (inputRefs.current["birthDate"] = ref)}
+                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                  errors.birthDate ? "mb-2" : "mb-3"
+                }`}
+                style={{ textAlignVertical: "center" }}
+                placeholder="DD/MM/AAAA"
+                placeholderTextColor="#9CA3AF"
+                value={value}
+                onChangeText={(text) => {
+                  let formatted = text.replace(/\D/g, "");
+                  if (formatted.length > 2) {
+                    formatted =
+                      formatted.slice(0, 2) + "/" + formatted.slice(2);
+                  }
+                  if (formatted.length > 5) {
+                    formatted =
+                      formatted.slice(0, 5) + "/" + formatted.slice(5, 9);
+                  }
+                  onChange(formatted);
+                }}
+                keyboardType="numeric"
+                maxLength={10}
+                returnKeyType="next"
+                scrollEnabled={false}
+                multiline={false}
+                numberOfLines={1}
+                onSubmitEditing={() => focusInput("height")}
+              />
+            )}
+          />
+          {errors.birthDate && (
+            <Text className="text-red-500 mb-3 text-sm">
+              {errors.birthDate.message}
+            </Text>
+          )}
+
           <Text className="text-sm font-rregular text-gray-600 mb-1">
             Altura (cm)
           </Text>
@@ -257,7 +497,6 @@ const ProfileOptions = () => {
             </Text>
           )}
 
-          {/* Peso */}
           <Text className="text-sm font-rregular text-gray-600 mb-1">
             Peso (kg)
           </Text>
@@ -309,7 +548,6 @@ const ProfileOptions = () => {
             </Text>
           )}
 
-          {/* Objetivo */}
           <Text className="text-sm font-rregular text-gray-600 mb-1">
             Objetivo
           </Text>
@@ -348,7 +586,6 @@ const ProfileOptions = () => {
             </Text>
           )}
 
-          {/* Dias de treino */}
           <Text className="text-sm font-rregular text-gray-600 mb-2">
             Dias de treino
           </Text>
@@ -396,7 +633,6 @@ const ProfileOptions = () => {
             </Text>
           )}
 
-          {/* Condições médicas */}
           <Text className="text-sm font-rregular text-gray-600 mb-1">
             Condições médicas
           </Text>
@@ -427,11 +663,10 @@ const ProfileOptions = () => {
             </Text>
           )}
 
-          {/* Botão Salvar */}
           <Pressable
-            disabled={!isValid}
+            disabled={!hasChanges}
             className={`w-full h-12 mb-4 ${
-              !isValid ? "bg-secondary/30 opacity-50" : "bg-darkgreen"
+              !hasChanges ? "bg-secondary/30 opacity-50" : "bg-darkgreen"
             } rounded-3xl justify-center items-center shadow-md`}
             onPress={handleSubmit(onSubmit)}
           >

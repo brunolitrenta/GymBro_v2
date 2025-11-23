@@ -165,6 +165,46 @@ const RootLayout = () => {
                 }}
               />
               <Stack.Screen
+                name="modals/createStudent"
+                options={{
+                  headerShown: false,
+                  navigationBarHidden: true,
+                  presentation: "transparentModal",
+                  animation: "fade",
+                  contentStyle: { backgroundColor: "transparent" },
+                }}
+              />
+              <Stack.Screen
+                name="modals/medicalConditions"
+                options={{
+                  headerShown: false,
+                  navigationBarHidden: true,
+                  presentation: "transparentModal",
+                  animation: "fade",
+                  contentStyle: { backgroundColor: "transparent" },
+                }}
+              />
+              <Stack.Screen
+                name="modals/sharePlan"
+                options={{
+                  headerShown: false,
+                  navigationBarHidden: true,
+                  presentation: "transparentModal",
+                  animation: "fade",
+                  contentStyle: { backgroundColor: "transparent" },
+                }}
+              />
+              <Stack.Screen
+                name="modals/customAlert"
+                options={{
+                  headerShown: false,
+                  navigationBarHidden: true,
+                  presentation: "transparentModal",
+                  animation: "fade",
+                  contentStyle: { backgroundColor: "transparent" },
+                }}
+              />
+              <Stack.Screen
                 name="calendar"
                 options={{
                   headerShown: false,

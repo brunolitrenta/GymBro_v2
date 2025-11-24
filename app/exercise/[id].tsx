@@ -266,7 +266,7 @@ const exercisePage = () => {
               </View>
               <View className="flex-1 ml-2">
                 <Text className="text-darkgreen font-rsemi text-sm mb-2">
-                  DESCANSO (Segundos)
+                  DESCANSO (S)
                 </Text>
                 <Controller
                   control={control}

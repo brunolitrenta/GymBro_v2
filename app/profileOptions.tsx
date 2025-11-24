@@ -370,7 +370,7 @@ const ProfileOptions = () => {
                   errors.name ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
-                placeholder="Michael Jackson"
+                placeholder="Seu nome"
                 placeholderTextColor="#9CA3AF"
                 value={value}
                 onChangeText={onChange}
@@ -402,7 +402,7 @@ const ProfileOptions = () => {
                   errors.email ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
-                placeholder="imalive@bahia.com"
+                placeholder="Seu e-mail"
                 placeholderTextColor="#9CA3AF"
                 value={value}
                 editable={false}
@@ -547,7 +547,7 @@ const ProfileOptions = () => {
                   errors.height ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
-                placeholder="175.5"
+                placeholder="Ex: 175.5"
                 placeholderTextColor="#9CA3AF"
                 value={value ? value.toString() : ""}
                 onChangeText={(text) => {
@@ -598,7 +598,7 @@ const ProfileOptions = () => {
                   errors.weight ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
-                placeholder="70.5"
+                placeholder="Ex: 70.5"
                 placeholderTextColor="#9CA3AF"
                 value={value ? value.toString() : ""}
                 onChangeText={(text) => {

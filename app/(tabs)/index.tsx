@@ -322,6 +322,8 @@ const Index = () => {
                     xLabel="Dia do Mês"
                     yLabel="Treinos esperados"
                     trainableDays={trainableDaysData}
+                    minY={0}
+                    maxY={totalPossibleSessions}
                   />
                 )}
               </View>

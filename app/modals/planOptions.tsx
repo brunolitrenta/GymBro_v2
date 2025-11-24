@@ -45,23 +45,21 @@ const PlanOptions = () => {
     try {
       await api.delete(`/workout/plan/${planId}`);
       eventEmitter.emit("planDeleted");
-      router.replace("/(tabs)/plans");
+      router.dismiss(2);
+      router.push({ pathname: "/(tabs)/plans" });
     } catch (error) {
       console.error("Erro ao excluir plano:", error);
     }
   }
 
   function sharePlan() {
-    router.back();
-    setTimeout(() => {
-      router.push({
-        pathname: "/modals/sharePlan",
-        params: {
-          planId: planId,
-          planName: planName,
-        },
-      });
-    }, 100);
+    router.push({
+      pathname: "/modals/sharePlan",
+      params: {
+        planId: planId,
+        planName: planName,
+      },
+    });
   }
 
   return (

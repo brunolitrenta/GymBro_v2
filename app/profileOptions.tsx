@@ -52,6 +52,45 @@ const ProfileOptions = () => {
     },
   });
 
+  const normalizeNumericValue = React.useCallback(
+    (
+      value:
+        | PersonalDataForm["height"]
+        | PersonalDataForm["weight"]
+        | undefined
+    ) => {
+      if (typeof value === "number") {
+        return Number.isFinite(value) ? value : undefined;
+      }
+      if (typeof value === "string" && value.trim() !== "") {
+        const parsed = parseFloat(value.replace(",", "."));
+        return Number.isFinite(parsed) ? parsed : undefined;
+      }
+      return undefined;
+    },
+    []
+  );
+
+  const arraysEqual = React.useCallback(
+    (
+      a: (number | undefined)[] = [],
+      b: (number | undefined)[] = []
+    ) => {
+      const filteredA = a.filter((val): val is number => typeof val === "number");
+      const filteredB = b.filter((val): val is number => typeof val === "number");
+
+      if (filteredA.length !== filteredB.length) {
+        return false;
+      }
+
+      const sortedA = [...filteredA].sort();
+      const sortedB = [...filteredB].sort();
+
+      return sortedA.every((val, idx) => val === sortedB[idx]);
+    },
+    []
+  );
+
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
@@ -76,28 +115,23 @@ const ProfileOptions = () => {
     const subscription = watch((formData) => {
       if (!originalData) return;
       
-      const arraysEqual = (a: number[], b: number[]) => {
-        if (a.length !== b.length) return false;
-        const sortedA = [...a].sort();
-        const sortedB = [...b].sort();
-        return sortedA.every((val, idx) => val === sortedB[idx]);
-      };
-
       const changed = 
         formData.name !== originalData.name ||
         formData.gender !== originalData.gender ||
         formData.birthDate !== originalData.birthDate ||
-        formData.height !== originalData.height ||
-        formData.weight !== originalData.weight ||
+        normalizeNumericValue(formData.height) !==
+          normalizeNumericValue(originalData.height) ||
+        normalizeNumericValue(formData.weight) !==
+          normalizeNumericValue(originalData.weight) ||
         formData.goal !== originalData.goal ||
-        !arraysEqual((formData.workoutDays || []).filter((d): d is number => d !== undefined), originalData.workoutDays || []) ||
-        formData.medical !== originalData.medical;
+        !arraysEqual(formData.workoutDays || [], originalData.workoutDays || []) ||
+        (formData.medical ?? "") !== (originalData.medical ?? "");
 
       setHasChanges(changed);
     });
 
     return () => subscription.unsubscribe();
-  }, [watch, originalData]);
+  }, [watch, originalData, normalizeNumericValue, arraysEqual]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -157,6 +191,7 @@ const ProfileOptions = () => {
     }
   }, [userId, reset]);
 
+
   const focusInput = (inputKey: string) => {
     setTimeout(() => {
       inputRefs.current[inputKey]?.focus();
@@ -176,16 +211,69 @@ const ProfileOptions = () => {
         isoDate = date.toISOString();
       }
 
-      const payload = {
-        name: data.name,
-        gender: data.gender,
-        birthDate: isoDate,
-        height: data.height,
-        weight: data.weight,
-        goal: data.goal,
-        workoutDays: data.workoutDays,
-        medical: data.medical,
-      };
+      if (!originalData) {
+        const fallbackPayload = {
+          name: data.name,
+          gender: data.gender,
+          birthDate: isoDate,
+          height: normalizeNumericValue(data.height),
+          weight: normalizeNumericValue(data.weight),
+          goal: data.goal,
+          workoutDays: data.workoutDays,
+          medical: data.medical,
+        };
+
+        await api.put(`/users/${userId}`, fallbackPayload);
+        router.back();
+        return;
+      }
+
+      const payload: Record<string, unknown> = {};
+
+      if (data.name !== originalData.name) {
+        payload.name = data.name;
+      }
+
+      if (data.gender !== originalData.gender) {
+        payload.gender = data.gender;
+      }
+
+      if (data.birthDate !== originalData.birthDate) {
+        payload.birthDate = isoDate;
+      }
+
+      const normalizedHeight = normalizeNumericValue(data.height);
+      const originalHeight = normalizeNumericValue(originalData.height);
+
+      if (normalizedHeight !== originalHeight) {
+        payload.height = normalizedHeight ?? null;
+      }
+
+      const normalizedWeight = normalizeNumericValue(data.weight);
+      const originalWeight = normalizeNumericValue(originalData.weight);
+
+      if (normalizedWeight !== originalWeight) {
+        payload.weight = normalizedWeight ?? null;
+      }
+
+      if (data.goal !== originalData.goal) {
+        payload.goal = data.goal;
+      }
+
+      if (
+        !arraysEqual(data.workoutDays || [], originalData.workoutDays || [])
+      ) {
+        payload.workoutDays = data.workoutDays;
+      }
+
+      if ((data.medical ?? "") !== (originalData.medical ?? "")) {
+        payload.medical = data.medical ?? "";
+      }
+
+      if (Object.keys(payload).length === 0) {
+        router.back();
+        return;
+      }
 
       await api.put(`/users/${userId}`, payload);
 

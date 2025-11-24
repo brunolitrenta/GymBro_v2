@@ -45,13 +45,11 @@ const WorkoutOptions = () => {
   async function deleteWorkout() {
     try {
       await api.delete(`/workout/${workoutId}`);
-      eventEmitter.emit('workoutDeleted');
+      eventEmitter.emit("workoutDeleted");
+      router.dismiss(1);
       router.back();
-      setTimeout(() => {
-        router.back();
-      }, 50);
     } catch (error) {
-      console.error('Erro ao excluir treino:', error);
+      console.error("Erro ao excluir treino:", error);
     }
   }
 

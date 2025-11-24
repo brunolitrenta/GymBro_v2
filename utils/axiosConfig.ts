@@ -2,16 +2,14 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { toastError, toastSuccess } from '@/utils/toast';
 
-// Variável global para controlar o loading
 let globalLoadingHandler: ((loading: boolean) => void) | null = null;
 
-// Função para registrar o handler de loading
 export const setLoadingHandler = (handler: (loading: boolean) => void) => {
   globalLoadingHandler = handler;
 };
 
 const api = axios.create({
-  baseURL: 'http://192.168.1.154:3000',
+  baseURL: 'http://192.168.15.43:3000',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -20,7 +18,6 @@ const api = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
-    // Ativa o loading ao iniciar a requisição
     if (globalLoadingHandler) {
       globalLoadingHandler(true);
     }
@@ -32,7 +29,6 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    // Desativa o loading em caso de erro
     if (globalLoadingHandler) {
       globalLoadingHandler(false);
     }
@@ -42,7 +38,6 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    // Desativa o loading ao receber a resposta
     if (globalLoadingHandler) {
       globalLoadingHandler(false);
     }
@@ -50,26 +45,21 @@ api.interceptors.response.use(
     const method = response.config.method?.toUpperCase();
     console.log(`✅ ${method} ${response.config.url} - Status: ${response.status}`);
     
-    // Verifica se a requisição tem flag para suprimir toast
     const silentSuccess = response.config?.headers?.['X-Silent'] === 'true';
     
-    // Exibir toast somente para operações de escrita (POST, PUT, PATCH, DELETE)
     if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && !silentSuccess) {
-      // Tentar obter mensagem customizada da API
       const msg = (response.data?.message as string) || 'Operação realizada com sucesso';
       toastSuccess(msg);
     }
     return response;
   },
   async (error) => {
-    // Desativa o loading em caso de erro
     if (globalLoadingHandler) {
       globalLoadingHandler(false);
     }
     
     console.log('🔍 INTERCEPTOR - Detalhes do erro:');
 
-    // Verifica se a requisição tem flag para suprimir toast
     const silentError = error.config?.headers?.['X-Silent'] === 'true';
 
     let extractedMessage = 'Erro na requisição';
@@ -88,7 +78,6 @@ api.interceptors.response.use(
       extractedMessage = error.message || extractedMessage;
     }
 
-    // Sessão expirada
     if (error.response?.status === 401) {
       console.log('🚪 Sessão expirada');
       await AsyncStorage.removeItem('authToken');

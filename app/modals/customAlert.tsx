@@ -33,25 +33,39 @@ const CustomAlert = () => {
         </View>
 
         <View className="w-full gap-3">
-          <TouchableOpacity
-            onPress={handleConfirm}
-            activeOpacity={0.7}
-            className="w-full py-4 rounded-2xl items-center bg-red-500"
-          >
-            <Text className="font-rbold text-base text-white">
-              {confirmText || "Confirmar"}
-            </Text>
-          </TouchableOpacity>
+          {action ? (
+            <>
+              <TouchableOpacity
+                onPress={handleConfirm}
+                activeOpacity={0.7}
+                className="w-full py-4 rounded-2xl items-center bg-red-500"
+              >
+                <Text className="font-rbold text-base text-white">
+                  {confirmText || "Confirmar"}
+                </Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-            className="w-full py-4 rounded-2xl items-center bg-secondary/10"
-          >
-            <Text className="font-rbold text-base text-secondary">
-              {cancelText || "Cancelar"}
-            </Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                activeOpacity={0.7}
+                className="w-full py-4 rounded-2xl items-center bg-secondary/10"
+              >
+                <Text className="font-rbold text-base text-secondary">
+                  {cancelText || "Cancelar"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              className="w-full py-4 rounded-2xl items-center bg-darkgreen"
+            >
+              <Text className="font-rbold text-base text-white">
+                Entendi
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>

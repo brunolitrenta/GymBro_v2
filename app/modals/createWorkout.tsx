@@ -4,11 +4,9 @@ import {
   Pressable,
   TouchableOpacity,
   FlatList,
-  ScrollView,
-  Modal,
   ActivityIndicator,
 } from "react-native";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { workoutLabels } from "@/constants/workoutLabels";
@@ -16,6 +14,7 @@ import { bodyAreas } from "@/constants/BodyAreas";
 import { ISaveWorkout } from "@/interfaces/ISaveWorkout";
 import { useLoading } from "@/hooks/loadingContext";
 import api from "@/utils/axiosConfig";
+import { CustomPicker } from "@/components/CustomPicker";
 
 const CreateWorkout = () => {
   const { planId, existingWorkoutNames } = useLocalSearchParams();
@@ -30,15 +29,23 @@ const CreateWorkout = () => {
 
   const [workoutData, setWorkoutData] = useState<any[]>([]);
 
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
-  const dropdownButtonRef = useRef<View>(null);
-
   const { isLoading, withLoading } = useLoading();
+
+  const bodyAreaItems = useMemo(
+    () => [
+      { label: "Todas as partes do corpo", value: "__all__" },
+      ...bodyAreas.map((area) => ({ label: area, value: area })),
+    ],
+    []
+  );
+
+  const handleBodyAreaChange = (value: string) => {
+    if (value === "__all__") {
+      setBodyAreaSelected(null);
+    } else {
+      setBodyAreaSelected(value);
+    }
+  };
 
   const labelsSelecionadas = (arrayDeObjetos: ISaveWorkout[]) => {
     const labels: { [key: string]: boolean } = {};
@@ -251,110 +258,16 @@ const CreateWorkout = () => {
           <Text className="text-secondary font-rbold text-lg mb-3">
             Filtrar Exercícios
           </Text>
-          <View ref={dropdownButtonRef} className="w-full">
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                dropdownButtonRef.current?.measure(
-                  (x, y, width, height, pageX, pageY) => {
-                    setDropdownPosition({
-                      top: pageY + height,
-                      left: pageX,
-                      width,
-                    });
-                    setIsDropdownOpen(!isDropdownOpen);
-                  }
-                );
-              }}
-              className="w-full bg-secondary/5 rounded-2xl px-4 py-3 flex-row justify-between items-center border-2 border-secondary/10"
-            >
-              <Text
-                className={`font-rregular text-base ${
-                  bodyAreaSelected ? "text-secondary" : "text-secondary/40"
-                }`}
-              >
-                {bodyAreaSelected || "Todas as partes do corpo"}
-              </Text>
-              <FontAwesome6
-                name={isDropdownOpen ? "chevron-up" : "chevron-down"}
-                size={16}
-                color="#D5D962"
-              />
-            </TouchableOpacity>
-          </View>
+          <CustomPicker
+            items={bodyAreaItems}
+            selectedValue={bodyAreaSelected ?? "__all__"}
+            onValueChange={handleBodyAreaChange}
+            placeholder="Todas as partes do corpo"
+            emptyMessage="Nenhuma parte do corpo disponível"
+          />
         </View>
 
-        <Modal
-          visible={isDropdownOpen}
-          hardwareAccelerated
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setIsDropdownOpen(false)}
-        >
-          <Pressable
-            style={{ flex: 1 }}
-            onPress={() => setIsDropdownOpen(false)}
-          >
-            <View
-              style={{
-                position: "absolute",
-                top: dropdownPosition.top,
-                left: dropdownPosition.left,
-                width: dropdownPosition.width,
-                maxHeight: 240,
-                backgroundColor: "#FFFFFF",
-                borderRadius: 16,
-                borderWidth: 2,
-                borderColor: "#60665E",
-                elevation: 10,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-              }}
-            >
-              <ScrollView>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    setBodyAreaSelected(null);
-                    setIsDropdownOpen(false);
-                  }}
-                  className="px-4 py-3 border-b border-grayish"
-                >
-                  <Text className="font-rregular text-base text-reallygray">
-                    Todas as partes
-                  </Text>
-                </TouchableOpacity>
-                {bodyAreas.map((ba, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setBodyAreaSelected(ba);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`px-4 py-3 ${
-                      index < bodyAreas.length - 1
-                        ? "border-b border-grayish"
-                        : ""
-                    }`}
-                  >
-                    <Text
-                      className={`font-rregular text-base ${
-                        bodyAreaSelected === ba
-                          ? "text-darkgreen font-rbold"
-                          : "text-textcolor"
-                      }`}
-                    >
-                      {ba}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </Pressable>
-        </Modal>
+        
         <View className="flex-1 w-11/12 px-2">
           <View className="flex-row justify-between items-center mb-3">
             <Text className="text-secondary font-rbold text-lg">

@@ -92,8 +92,14 @@ const Progress = () => {
           setProgressError(null);
           setLogsError(null);
 
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
           const [progressResponse, logsResponse] = await Promise.all([
-            api.get(`/users/progress/${userId}`),
+            api.get(`/users/progress/${userId}`, {
+              params: {
+                timezone: timezone,
+              },
+            }),
             api.get(`/users/progress/logs/${userId}`),
           ]);
 
@@ -174,7 +180,6 @@ const Progress = () => {
               return null;
             }
 
-            // Tenta buscar a data de várias propriedades possíveis
             const candidateValues = [
               entry?.session?.startedAt,
               entry?.workoutExercise?.createdAt,
@@ -576,7 +581,6 @@ const Progress = () => {
             </View>
           </View>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );

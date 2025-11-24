@@ -15,6 +15,12 @@ export const exerciseFormSchema = z.object({
     .min(1, "Repetições deve ser maior que 0")
     .positive("Repetições deve ser um número positivo")
     .int("Repetições deve ser um número inteiro"),
+  restSeconds: z
+    .number()
+    .min(0, "Descanso deve ser maior ou igual a 0")
+    .nonnegative("Descanso não pode ser negativo")
+    .int("Descanso deve ser um número inteiro")
+    .optional(),
   notes: z.string().max(500, "Máximo 500 caracteres").optional(),
 });
 

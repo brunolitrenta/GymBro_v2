@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import { FontAwesome6, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useForm, Controller } from "react-hook-form";
@@ -28,6 +28,33 @@ const exercisePage = () => {
   const { userId } = useAuth();
   const { isLoading } = useLoading();
 
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsTimerRunning(false);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timeLeft]);
+
+  const toggleTimer = (seconds: number) => {
+    if (isTimerRunning) {
+      setIsTimerRunning(false);
+      setTimeLeft(0);
+    } else {
+      if (seconds > 0) {
+        setTimeLeft(seconds);
+        setIsTimerRunning(true);
+      }
+    }
+  };
+
   const workoutBlocked = isWorkoutBlocked === "true";
   const sessionActive = hasActiveSession === "true";
   const completed = isCompleted === "true";
@@ -44,6 +71,7 @@ const exercisePage = () => {
       weight: parsedExercise.weightKg || 0,
       sets: parsedExercise.sets || 0,
       reps: parsedExercise.reps || 0,
+      restSeconds: parsedExercise.restSeconds || 0,
       notes: parsedExercise.notes || "",
     },
   });
@@ -58,6 +86,7 @@ const exercisePage = () => {
           userId,
           weight: data.weight,
           sets: data.sets,
+          restSeconds: data.restSeconds,
           reps: data.reps,
           notes: data.notes || null,
         },
@@ -201,38 +230,99 @@ const exercisePage = () => {
                 />
               </View>
             </View>
-            <View>
-              <Text className="text-darkgreen font-rsemi text-sm mb-2">
-                CARGA (KG)
-              </Text>
-              <Controller
-                control={control}
-                name="weight"
-                render={({ field: { onChange, value } }) => (
-                  <View>
-                    <TextInput
-                      className={`bg-secondary/5 border-2 ${
-                        errors.weight ? "border-red-500" : "border-secondary/10"
-                      } rounded-2xl px-4 py-3 font-rbold text-2xl text-center text-secondary`}
-                      value={value > 0 ? value.toString() : ""}
-                      onChangeText={(text) => {
-                        const cleaned = text.replace(/[^0-9.]/g, "");
-                        onChange(cleaned ? parseFloat(cleaned) : 0);
-                      }}
-                      placeholder="0"
-                      placeholderTextColor="#999"
-                      keyboardType="decimal-pad"
-                      autoComplete="off"
-                      editable={!isLoading && !isButtonDisabled}
-                    />
-                    {errors.weight && (
-                      <Text className="text-red-500 text-xs mt-1 text-center">
-                        {errors.weight.message}
-                      </Text>
-                    )}
-                  </View>
-                )}
-              />
+            <View className="flex-row justify-between">
+              <View className="flex-1 mr-2">
+                <Text className="text-darkgreen font-rsemi text-sm mb-2">
+                  CARGA (KG)
+                </Text>
+                <Controller
+                  control={control}
+                  name="weight"
+                  render={({ field: { onChange, value } }) => (
+                    <View>
+                      <TextInput
+                        className={`bg-secondary/5 border-2 ${
+                          errors.weight ? "border-red-500" : "border-secondary/10"
+                        } rounded-2xl px-4 py-3 font-rbold text-2xl text-center text-secondary`}
+                        value={value > 0 ? value.toString() : ""}
+                        onChangeText={(text) => {
+                          const cleaned = text.replace(/[^0-9.]/g, "");
+                          onChange(cleaned ? parseFloat(cleaned) : 0);
+                        }}
+                        placeholder="0"
+                        placeholderTextColor="#999"
+                        keyboardType="decimal-pad"
+                        autoComplete="off"
+                        editable={!isLoading && !isButtonDisabled}
+                      />
+                      {errors.weight && (
+                        <Text className="text-red-500 text-xs mt-1 text-center">
+                          {errors.weight.message}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                />
+              </View>
+              <View className="flex-1 ml-2">
+                <Text className="text-darkgreen font-rsemi text-sm mb-2">
+                  DESCANSO (Segundos)
+                </Text>
+                <Controller
+                  control={control}
+                  name="restSeconds"
+                  render={({ field: { onChange, value } }) => (
+                    <View>
+                      {isTimerRunning ? (
+                        <View className="bg-secondary/5 border-2 border-darkgreen rounded-2xl px-4 py-3 flex-row justify-center items-center">
+                          <Text className="font-rbold text-2xl text-darkgreen mr-3">
+                            {timeLeft}
+                          </Text>
+                          <TouchableOpacity onPress={() => toggleTimer(0)}>
+                            <FontAwesome6 name="stop" size={20} color="#D5D962" />
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <View className="relative justify-center">
+                          <TextInput
+                            className={`bg-secondary/5 border-2 ${
+                              errors.restSeconds
+                                ? "border-red-500"
+                                : "border-secondary/10"
+                            } rounded-2xl px-4 py-3 font-rbold text-2xl text-center text-secondary`}
+                            value={(value || 0) > 0 ? (value || 0).toString() : ""}
+                            onChangeText={(text) => {
+                              const cleaned = text.replace(/[^0-9]/g, "");
+                              onChange(cleaned ? parseInt(cleaned) : 0);
+                            }}
+                            placeholder="0"
+                            placeholderTextColor="#999"
+                            keyboardType="number-pad"
+                            autoComplete="off"
+                            editable={!isLoading && !isButtonDisabled}
+                          />
+                          <TouchableOpacity
+                            className="absolute right-4"
+                            onPress={() => toggleTimer(value || 0)}
+                            disabled={!value || value <= 0}
+                          >
+                            <FontAwesome6
+                              name="play"
+                              size={16}
+                              color={(value || 0) > 0 ? "#2D3748" : "#A0AEC0"}
+                            />
+                          </TouchableOpacity>
+                          {errors.restSeconds && (
+                            <Text className="text-red-500 text-xs mt-1 text-center">
+                              {errors.restSeconds.message}
+                            </Text>
+                          )}
+                        </View>
+                      )}
+                    </View>
+                  )}
+                />
+              </View>
             </View>
           </View>
 

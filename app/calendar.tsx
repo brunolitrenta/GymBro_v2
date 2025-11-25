@@ -41,13 +41,13 @@ const Calendario = () => {
             }),
           ]).then((response) => {
             if (response[0].status === "fulfilled") {
-              setWorkoutSessions(response[0].value.data.data || []);
+              setWorkoutSessions(response[0].value.data?.data || []);
             } else {
               setWorkoutSessions([]);
             }
             if (response[1].status === "fulfilled") {
-              setStreakCount(response[1].value.data.data.currentStreak || 0);
-              setLongestStreak(response[1].value.data.data.longestStreak || 0);
+              setStreakCount(response[1].value.data?.data?.currentStreak || 0);
+              setLongestStreak(response[1].value.data?.data?.longestStreak || 0);
             } else {
               setStreakCount(0);
               setLongestStreak(0);
@@ -57,6 +57,8 @@ const Calendario = () => {
           console.error("Erro ao buscar sessões de treino:", error);
         }
       };
+
+      console.log(workoutSessions)
 
       fetchWorkoutSessions();
     }, [userId])
@@ -146,7 +148,6 @@ const Calendario = () => {
                       planName: workout.workout?.plan?.name || "",
                       startedAt: workout.startedAt,
                       finishedAt: workout.finishedAt,
-                      notes: workout.notes || "",
                     },
                   }}
                 >

@@ -13,8 +13,7 @@ const WorkoutDetails = () => {
     workoutName, 
     planName, 
     startedAt, 
-    finishedAt, 
-    notes 
+    finishedAt
   } = useLocalSearchParams();
 
   return (
@@ -79,15 +78,7 @@ const WorkoutDetails = () => {
               })}
             </Text>
           </View>
-          
-          {notes && (
-            <View className="mt-2 pt-3 border-t border-secondary/10">
-              <Text className="font-rsemi text-sm text-secondary/60 mb-2">NOTAS</Text>
-              <Text className="font-rregular text-sm text-secondary">
-                {notes}
-              </Text>
-            </View>
-          )}
+        
         </View>
       </View>
     </View>

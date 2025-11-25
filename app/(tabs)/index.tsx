@@ -36,15 +36,13 @@ const Index = () => {
     useCallback(() => {
       const fetchMainData = async () => {
         if (!userId) return;
-
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         try {
-          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
           const result = await api.get(`/users/main/${userId}`, {
             headers: { "X-Silent": "true" },
             params: { timezone },
           });
-          
+
           const data = result.data?.data || {};
           const monthSessionsValue = data.monthSessions || 0;
           const completionRateValue = data.completionRate || 0;
@@ -65,8 +63,8 @@ const Index = () => {
           const labels: string[] = [];
 
           completedSessions.forEach((session: any) => {
-            if (session.startedAt) {
-              const sessionDate = new Date(session.startedAt);
+            if (session.finishedAt) {
+              const sessionDate = new Date(session.finishedAt);
               if (
                 sessionDate.getMonth() === currentMonth &&
                 sessionDate.getFullYear() === currentYear
@@ -101,6 +99,7 @@ const Index = () => {
             },
             []
           );
+
 
           setMonthSessions(monthSessionsValue);
           setCompletionRate(completionRateValue);
@@ -246,8 +245,9 @@ const Index = () => {
                   dayDate.setHours(0, 0, 0, 0);
 
                   const hasTrained = sessions.some((session) => {
-                    if (!session.startedAt) return false;
-                    const sessionDate = new Date(session.startedAt);
+                    console.log(session);
+                    if (!session.finishedAt) return false;
+                    const sessionDate = new Date(session.finishedAt);
                     sessionDate.setHours(0, 0, 0, 0);
                     return sessionDate.getTime() === dayDate.getTime();
                   });

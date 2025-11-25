@@ -33,7 +33,7 @@ const Profile = () => {
                   <FontAwesome6 name="user" size={18} color="#D5D962" />
                 </View>
                 <Text className="text-base font-rregular text-secondary flex-1">
-                  Informações pessoais
+                  Dados pessoais
                 </Text>
                 <FontAwesome6 name="chevron-right" size={18} color="#D5D962" />
               </Pressable>

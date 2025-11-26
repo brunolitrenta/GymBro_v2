@@ -44,8 +44,8 @@ const ProfileOptions = () => {
       email: "",
       gender: undefined,
       birthDate: "",
-      height: undefined,
-      weight: undefined,
+      height: "",
+      weight: "",
       goal: undefined,
       workoutDays: [],
       medical: "",
@@ -160,8 +160,14 @@ const ProfileOptions = () => {
             email: userData.email || "",
             gender: userData.gender || undefined,
             birthDate: formattedBirthDate,
-            height: userData.height || undefined,
-            weight: userData.weight || undefined,
+            height:
+              userData.height !== undefined && userData.height !== null
+                ? String(userData.height)
+                : "",
+            weight:
+              userData.weight !== undefined && userData.weight !== null
+                ? String(userData.weight)
+                : "",
             goal: userData.goal || undefined,
             workoutDays: userData.workoutDays || [],
             medical: userData.medical || "",
@@ -549,25 +555,10 @@ const ProfileOptions = () => {
                 style={{ textAlignVertical: "center" }}
                 placeholder="Ex: 175.5"
                 placeholderTextColor="#9CA3AF"
-                value={value ? value.toString() : ""}
+                value={(value as string) ?? ""}
                 onChangeText={(text) => {
                   const normalizedText = text.replace(",", ".");
-
-                  if (normalizedText === "") {
-                    onChange(undefined);
-                  } else if (
-                    normalizedText === "." ||
-                    normalizedText.endsWith(".")
-                  ) {
-                    onChange(normalizedText);
-                  } else {
-                    const numericValue = parseFloat(normalizedText);
-                    if (!isNaN(numericValue)) {
-                      onChange(numericValue);
-                    } else {
-                      onChange(normalizedText);
-                    }
-                  }
+                  onChange(normalizedText === "" ? "" : normalizedText);
                 }}
                 keyboardType="decimal-pad"
                 maxLength={6}
@@ -600,25 +591,11 @@ const ProfileOptions = () => {
                 style={{ textAlignVertical: "center" }}
                 placeholder="Ex: 70.5"
                 placeholderTextColor="#9CA3AF"
-                value={value ? value.toString() : ""}
+                value={(value as string) ?? ""}
                 onChangeText={(text) => {
                   const normalizedText = text.replace(",", ".");
 
-                  if (normalizedText === "") {
-                    onChange(undefined);
-                  } else if (
-                    normalizedText === "." ||
-                    normalizedText.endsWith(".")
-                  ) {
-                    onChange(normalizedText);
-                  } else {
-                    const numericValue = parseFloat(normalizedText);
-                    if (!isNaN(numericValue)) {
-                      onChange(numericValue);
-                    } else {
-                      onChange(normalizedText);
-                    }
-                  }
+                  onChange(normalizedText === "" ? "" : normalizedText);
                 }}
                 keyboardType="decimal-pad"
                 maxLength={6}

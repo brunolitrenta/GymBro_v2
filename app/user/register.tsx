@@ -46,8 +46,8 @@ const Register = () => {
       userType: undefined,
       gender: undefined,
       birthDate: "",
-      weight: undefined,
-      height: undefined,
+      weight: "",
+      height: "",
       goal: undefined,
       workoutDays: [],
       medical: "",
@@ -558,25 +558,10 @@ const Register = () => {
                     style={{ textAlignVertical: "center" }}
                     placeholder="Ex: 70.5"
                     placeholderTextColor="#9CA3AF"
-                    value={value ? value.toString() : ""}
+                    value={(value as string) ?? ""}
                     onChangeText={(text) => {
                       const normalizedText = text.replace(",", ".");
-
-                      if (normalizedText === "") {
-                        onChange(undefined);
-                      } else if (
-                        normalizedText === "." ||
-                        normalizedText.endsWith(".")
-                      ) {
-                        onChange(normalizedText);
-                      } else {
-                        const numericValue = parseFloat(normalizedText);
-                        if (!isNaN(numericValue)) {
-                          onChange(numericValue);
-                        } else {
-                          onChange(normalizedText);
-                        }
-                      }
+                      onChange(normalizedText === "" ? "" : normalizedText);
                     }}
                     keyboardType="decimal-pad"
                     maxLength={6}
@@ -610,25 +595,10 @@ const Register = () => {
                     style={{ textAlignVertical: "center" }}
                     placeholder="Ex: 175.5"
                     placeholderTextColor="#9CA3AF"
-                    value={value ? value.toString() : ""}
+                    value={(value as string) ?? ""}
                     onChangeText={(text) => {
                       const normalizedText = text.replace(",", ".");
-
-                      if (normalizedText === "") {
-                        onChange(undefined);
-                      } else if (
-                        normalizedText === "." ||
-                        normalizedText.endsWith(".")
-                      ) {
-                        onChange(normalizedText);
-                      } else {
-                        const numericValue = parseFloat(normalizedText);
-                        if (!isNaN(numericValue)) {
-                          onChange(numericValue);
-                        } else {
-                          onChange(normalizedText);
-                        }
-                      }
+                      onChange(normalizedText === "" ? "" : normalizedText);
                     }}
                     keyboardType="decimal-pad"
                     maxLength={6}

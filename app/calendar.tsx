@@ -58,8 +58,6 @@ const Calendario = () => {
         }
       };
 
-      console.log(workoutSessions)
-
       fetchWorkoutSessions();
     }, [userId])
   );

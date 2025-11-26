@@ -245,7 +245,6 @@ const Index = () => {
                   dayDate.setHours(0, 0, 0, 0);
 
                   const hasTrained = sessions.some((session) => {
-                    console.log(session);
                     if (!session.finishedAt) return false;
                     const sessionDate = new Date(session.finishedAt);
                     sessionDate.setHours(0, 0, 0, 0);

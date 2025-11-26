@@ -97,7 +97,6 @@ const CreateWorkout = () => {
         label: selectedLabel,
         exerciseIds: selectedId,
       });
-      console.log(result.data);
       router.back();
     } catch (error) {
       console.error("Erro ao enviar treino:", error);
@@ -184,7 +183,6 @@ const CreateWorkout = () => {
         await withLoading(
           api.get("/workout/exercises/all").then((response) => {
             setWorkoutData(response.data.data);
-            console.log(response.data.data[0]);
           })
         );
       } catch (error) {

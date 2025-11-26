@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "GymBro",
-    "slug": "GymBro",
+    "slug": "gymbro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -36,6 +36,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "37f187ba-5785-4d4d-bf09-80b1f445a3a0"
+      }
+    },
+    "owner": "brunolitrenta"
   }
 }

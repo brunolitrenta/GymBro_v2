@@ -142,7 +142,7 @@ const CreateWorkout = () => {
           }`}
         >
           <MaterialCommunityIcons
-            name="image-outline"
+            name="dumbbell"
             size={28}
             color={foundId ? "white" : "#60665E"}
           />

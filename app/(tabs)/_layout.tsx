@@ -1,6 +1,7 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { FontAwesome5, FontAwesome6 } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
 
 const TabsLayout = () => {
   return (
@@ -9,6 +10,7 @@ const TabsLayout = () => {
         tabBarActiveTintColor: "black",
         tabBarInactiveTintColor: "#00000065",
         tabBarStyle: { backgroundColor: "#D6D984", height: "7%" },
+        tabBarButton: (props) => <TouchableOpacity {...(props as React.ComponentProps<typeof TouchableOpacity>)} />
       }}
     >
       <Tabs.Screen

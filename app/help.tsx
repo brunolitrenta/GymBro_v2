@@ -44,7 +44,7 @@ const HelpScreen = () => {
             className="bg-darkgreen px-6 py-3 rounded-2xl shadow-md"
           >
             <Text className="font-rsemi text-white text-base">
-              support@gymbro.com
+              suporte@gymbroapp.com.br
             </Text>
           </TouchableOpacity>
         </View>

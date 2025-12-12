@@ -9,7 +9,7 @@ export const setLoadingHandler = (handler: (loading: boolean) => void) => {
 };
 
 const api = axios.create({
-  baseURL: 'http://192.168.15.43:3000',
+  baseURL: 'https://gymbro-api-0pu2.onrender.com',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

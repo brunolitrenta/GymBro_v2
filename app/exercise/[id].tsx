@@ -145,6 +145,7 @@ const exercisePage = () => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
     >
       <SafeAreaView edges={["top"]} className="flex-1 bg-primary">
         <ScrollView

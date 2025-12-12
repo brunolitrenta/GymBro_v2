@@ -211,7 +211,7 @@ const Register = () => {
                 render={({ field: { onChange, value } }) => (
                   <TextInput
                     ref={(ref) => (inputRefs.current["name"] = ref)}
-                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                       errors.name ? "mb-2" : "mb-3"
                     }`}
                     style={{ textAlignVertical: "center" }}
@@ -297,7 +297,7 @@ const Register = () => {
                 render={({ field: { onChange, value } }) => (
                   <TextInput
                     ref={(ref) => (inputRefs.current["email"] = ref)}
-                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                       errors.email ? "mb-2" : "mb-3"
                     }`}
                     style={{ textAlignVertical: "center" }}
@@ -333,7 +333,7 @@ const Register = () => {
                   <View className="relative mb-3">
                     <TextInput
                       ref={(ref) => (inputRefs.current["password"] = ref)}
-                      className="w-full h-12 bg-white rounded-2xl px-4 py-0 pr-12 text-base font-rregular border border-gray-200"
+                      className="w-full h-12 bg-white rounded-2xl px-4 py-0 pr-12 text-base font-rregular border border-gray-200 text-textcolor"
                       style={{ textAlignVertical: "center" }}
                       placeholder="Sua senha"
                       placeholderTextColor="#9CA3AF"
@@ -387,7 +387,7 @@ const Register = () => {
                       ref={(ref) =>
                         (inputRefs.current["confirmPassword"] = ref)
                       }
-                      className="w-full h-12 bg-white rounded-2xl px-4 py-0 pr-12 text-base font-rregular border border-gray-200"
+                      className="w-full h-12 bg-white rounded-2xl px-4 py-0 pr-12 text-base font-rregular border border-gray-200 text-textcolor"
                       style={{ textAlignVertical: "center" }}
                       placeholder="Confirme sua senha"
                       placeholderTextColor="#9CA3AF"
@@ -530,7 +530,7 @@ const Register = () => {
                   return (
                     <TextInput
                       ref={(ref) => (inputRefs.current["birthDate"] = ref)}
-                      className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                      className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                         errors.birthDate ? "mb-2" : "mb-3"
                       }`}
                       style={{ textAlignVertical: "center" }}
@@ -565,7 +565,7 @@ const Register = () => {
                 render={({ field: { onChange, value } }) => (
                   <TextInput
                     ref={(ref) => (inputRefs.current["weight"] = ref)}
-                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                       errors.weight ? "mb-2" : "mb-3"
                     }`}
                     style={{ textAlignVertical: "center" }}
@@ -602,7 +602,7 @@ const Register = () => {
                 render={({ field: { onChange, value } }) => (
                   <TextInput
                     ref={(ref) => (inputRefs.current["height"] = ref)}
-                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                    className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                       errors.height ? "mb-2" : "mb-3"
                     }`}
                     style={{ textAlignVertical: "center" }}
@@ -759,7 +759,7 @@ const Register = () => {
                 render={({ field: { onChange, value } }) => (
                   <TextInput
                     ref={(ref) => (inputRefs.current["medical"] = ref)}
-                    className={`w-full min-h-12 max-h-24 bg-white rounded-2xl px-4 py-2 text-base font-rregular border border-gray-200 ${
+                    className={`w-full min-h-12 max-h-24 bg-white rounded-2xl px-4 py-2 text-base font-rregular border border-gray-200 text-textcolor ${
                       errors.medical ? "mb-2" : "mb-3"
                     }`}
                     style={{ textAlignVertical: "top" }}

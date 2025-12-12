@@ -90,7 +90,7 @@ const Login = () => {
     <SafeAreaView className="flex-1 bg-primary">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
         style={{ flex: 1 }}
       >
         <ScrollView
@@ -142,7 +142,7 @@ const Login = () => {
                 name="email"
                 render={({ field: { onChange, value } }) => (
                   <TextInput
-                    className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 ${
+                    className={`w-full h-14 bg-white rounded-2xl px-4 text-lg font-rregular border border-gray-200 text-textcolor ${
                       errors.email ? "mb-2" : "mb-4"
                     }`}
                     placeholder="Seu e-mail"
@@ -173,7 +173,7 @@ const Login = () => {
                 render={({ field: { onChange, value } }) => (
                   <View className={`relative ${errors.password ? "mb-2" : "mb-6"}`}>
                     <TextInput
-                      className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200"
+                      className="w-full h-14 bg-white rounded-2xl px-4 pr-14 text-lg font-rregular border border-gray-200 text-textcolor"
                       placeholder="Sua senha"
                       placeholderTextColor="#9CA3AF"
                       value={value}

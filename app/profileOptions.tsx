@@ -372,7 +372,7 @@ const ProfileOptions = () => {
             render={({ field: { onChange, value } }) => (
               <TextInput
                 ref={(ref) => (inputRefs.current["name"] = ref)}
-                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                   errors.name ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
@@ -404,7 +404,7 @@ const ProfileOptions = () => {
             render={({ field: { value } }) => (
               <TextInput
                 ref={(ref) => (inputRefs.current["email"] = ref)}
-                className={`w-full h-12 bg-gray-100 rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 opacity-60 ${
+                className={`w-full h-12 bg-gray-100 rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 opacity-60 text-textcolor ${
                   errors.email ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
@@ -505,7 +505,7 @@ const ProfileOptions = () => {
             render={({ field: { onChange, value } }) => (
               <TextInput
                 ref={(ref) => (inputRefs.current["birthDate"] = ref)}
-                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                   errors.birthDate ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
@@ -549,7 +549,7 @@ const ProfileOptions = () => {
             render={({ field: { onChange, value } }) => (
               <TextInput
                 ref={(ref) => (inputRefs.current["height"] = ref)}
-                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                   errors.height ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
@@ -585,7 +585,7 @@ const ProfileOptions = () => {
             render={({ field: { onChange, value } }) => (
               <TextInput
                 ref={(ref) => (inputRefs.current["weight"] = ref)}
-                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 ${
+                className={`w-full h-12 bg-white rounded-2xl px-4 py-0 text-base font-rregular border border-gray-200 text-textcolor ${
                   errors.weight ? "mb-2" : "mb-3"
                 }`}
                 style={{ textAlignVertical: "center" }}
@@ -707,7 +707,7 @@ const ProfileOptions = () => {
             render={({ field: { onChange, value } }) => (
               <TextInput
                 ref={(ref) => (inputRefs.current["medical"] = ref)}
-                className={`w-full min-h-12 max-h-24 bg-white rounded-2xl px-4 py-3 text-base font-rregular border border-gray-200 ${
+                className={`w-full min-h-12 max-h-24 bg-white rounded-2xl px-4 py-3 text-base font-rregular border border-gray-200 text-textcolor ${
                   errors.medical ? "mb-2" : "mb-6"
                 }`}
                 style={{ textAlignVertical: "top" }}

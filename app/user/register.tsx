@@ -38,7 +38,6 @@ const Register = () => {
     control,
     handleSubmit,
     formState: { errors, isValid },
-    watch,
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     mode: "onChange",
@@ -87,21 +86,6 @@ const Register = () => {
     }, 100);
   };
 
-  const normalizeWorkoutDays = React.useCallback(
-    (days?: RegisterForm["workoutDays"]) => {
-      if (!Array.isArray(days)) {
-        return [];
-      }
-
-      const filtered = days
-        .map((day) => Number(day))
-        .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6);
-
-      return Array.from(new Set(filtered)).sort((a, b) => a - b);
-    },
-    []
-  );
-
   const onSubmit = async (data: RegisterForm) => {
     try {
       let isoDate = null;
@@ -117,10 +101,6 @@ const Register = () => {
         }
       }
 
-      const workoutDaysPayload = normalizeWorkoutDays(
-        data.workoutDays ?? watch("workoutDays") ?? []
-      );
-
       const res = await api.post("/users", {
         name: data.name,
         email: data.email,
@@ -130,7 +110,7 @@ const Register = () => {
         goal: data.goal || null,
         height: data.height ? parseFloat(data.height.toString()) : null,
         weight: data.weight ? parseFloat(data.weight.toString()) : null,
-        workoutDays: workoutDaysPayload,
+        workoutDays: data.workoutDays || [],
         medical: data.medical || null,
         type: data.userType,
       });

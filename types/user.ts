@@ -27,6 +27,7 @@ export const registerSchema = z
           },
           { message: "Peso deve ser maior que 0" }
         ),
+        z.literal("")
       ])
       .optional(),
     height: z
@@ -39,6 +40,7 @@ export const registerSchema = z
           },
           { message: "Altura deve ser maior que 0" }
         ),
+        z.literal("")
       ])
       .optional(),
     goal: z

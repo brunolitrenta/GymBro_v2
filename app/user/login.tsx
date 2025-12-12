@@ -98,6 +98,7 @@ const Login = () => {
             flexGrow: 1,
             justifyContent: keyboardVisible ? "flex-start" : "center",
             paddingTop: keyboardVisible ? 25 : 0,
+            paddingBottom: keyboardVisible ? 100 : 0,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

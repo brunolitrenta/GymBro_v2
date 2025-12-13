@@ -28,7 +28,9 @@ const WorkoutPlan = () => {
   const { withLoading, isLoading } = useLoading();
   const { userId } = useAuth();
 
-  const [workoutsToDisplay, setWorkoutsToDisplay] = useState<any[]>([]);
+  const [workoutsToDisplay, setWorkoutsToDisplay] = useState<any[] | null>(
+    null
+  );
   const [workoutSessions, setWorkoutSessions] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -45,7 +47,8 @@ const WorkoutPlan = () => {
               headers: { "X-Silent": "true" },
             }),
           ]);
-          setWorkoutsToDisplay(workoutsResponse.data.data);
+          const workoutsData = workoutsResponse.data.data;
+          setWorkoutsToDisplay(Array.isArray(workoutsData) ? workoutsData : []);
           setWorkoutSessions(sessionsResponse.data.data || []);
           setRefreshing(false);
         } else {
@@ -59,7 +62,10 @@ const WorkoutPlan = () => {
               }),
             ]).then((results) => {
               if (results[0].status === "fulfilled") {
-                setWorkoutsToDisplay(results[0].value.data.data);
+                const workoutsData = results[0].value.data.data;
+                setWorkoutsToDisplay(
+                  Array.isArray(workoutsData) ? workoutsData : []
+                );
               } else {
                 console.error("Erro ao buscar workouts:", results[0].reason);
                 setWorkoutsToDisplay([]);
@@ -99,12 +105,16 @@ const WorkoutPlan = () => {
     const targetDate = new Date(today);
     targetDate.setDate(today.getDate() + dayOffset);
 
-    const targetDateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+    const targetDateStr = `${targetDate.getFullYear()}-${String(
+      targetDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(targetDate.getDate()).padStart(2, "0")}`;
 
     const session = workoutSessions.find((s: any) => {
       if (!s.finishedAt) return false;
       const sessionDate = new Date(s.finishedAt);
-      const sessionDateStr = `${sessionDate.getFullYear()}-${String(sessionDate.getMonth() + 1).padStart(2, '0')}-${String(sessionDate.getDate()).padStart(2, '0')}`;
+      const sessionDateStr = `${sessionDate.getFullYear()}-${String(
+        sessionDate.getMonth() + 1
+      ).padStart(2, "0")}-${String(sessionDate.getDate()).padStart(2, "0")}`;
       return sessionDateStr === targetDateStr;
     });
 
@@ -210,6 +220,7 @@ const WorkoutPlan = () => {
               <FontAwesome6 name="arrow-left" size={24} color="#2D3748" />
             </TouchableOpacity>
             <Link
+              disabled={isLoading}
               asChild
               href={{
                 pathname: "/modals/planOptions",
@@ -272,7 +283,7 @@ const WorkoutPlan = () => {
           </Link>
         </View>
         <View className="w-full px-6">
-          {isLoading ? (
+          {isLoading || workoutsToDisplay === null ? (
             <View
               className="w-full justify-center items-center bg-white rounded-3xl p-8"
               style={{ minHeight: 200 }}
@@ -300,10 +311,10 @@ const WorkoutPlan = () => {
                 asChild
                 href={{
                   pathname: "/modals/createWorkout",
-                  params: { 
+                  params: {
                     planId: planId,
                     existingWorkoutNames: JSON.stringify(
-                      workoutsToDisplay.map(w => w.name)
+                      workoutsToDisplay.map((w) => w.name)
                     ),
                   },
                 }}
@@ -326,17 +337,18 @@ const WorkoutPlan = () => {
                     Seus Treinos
                   </Text>
                   <Text className="text-secondary/60 font-rregular text-sm">
-                    {workoutsToDisplay.length} {workoutsToDisplay.length === 1 ? 'treino' : 'treinos'}
+                    {workoutsToDisplay.length}{" "}
+                    {workoutsToDisplay.length === 1 ? "treino" : "treinos"}
                   </Text>
                 </View>
                 <Link
                   asChild
                   href={{
                     pathname: "/modals/createWorkout",
-                    params: { 
+                    params: {
                       planId: planId,
                       existingWorkoutNames: JSON.stringify(
-                        workoutsToDisplay.map(w => w.name)
+                        workoutsToDisplay.map((w) => w.name)
                       ),
                     },
                   }}

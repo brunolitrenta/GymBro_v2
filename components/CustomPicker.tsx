@@ -61,24 +61,10 @@ export const CustomPicker: React.FC<CustomPickerProps> = ({
     if (!isOpen) {
       triggerRef.current?.measureInWindow((x, y, width, height) => {
         const window = Dimensions.get("window");
-        const windowHeight = window.height;
         const windowWidth = window.width;
         const verticalGap = 8;
-        const estimatedRowHeight = 52;
-        const estimatedContentHeight = Math.min(
-          260,
-          Math.max(items.length, 1) * estimatedRowHeight
-        );
 
         let top = y + height + verticalGap;
-        const spaceBelow = windowHeight - top;
-
-        if (spaceBelow < estimatedContentHeight + verticalGap) {
-          top = Math.max(
-            verticalGap,
-            y - estimatedContentHeight - verticalGap
-          );
-        }
 
         let left = x;
         const horizontalPadding = 16;

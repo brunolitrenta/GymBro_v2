@@ -45,10 +45,7 @@ api.interceptors.response.use(
     }
 
     const method = response.config.method?.toUpperCase();
-    console.log(
-      `✅ ${method} ${response.config.url} - Status: ${response.status}`
-    );
-
+   
     const silentSuccess = response.config?.headers?.["X-Silent"] === "true";
 
     if (
@@ -66,8 +63,6 @@ api.interceptors.response.use(
     if (globalLoadingHandler) {
       globalLoadingHandler(false);
     }
-
-    console.log("🔍 INTERCEPTOR - Detalhes do erro:");
 
     const silentError = error.config?.headers?.["X-Silent"] === "true";
 
@@ -94,7 +89,6 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      console.log("🚪 Sessão expirada");
       await AsyncStorage.removeItem("authToken");
       await AsyncStorage.removeItem("userName");
       if (!silentError) {

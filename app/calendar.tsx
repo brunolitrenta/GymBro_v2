@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { months, weekDays } from "../constants/Calendar";
 import {
@@ -20,6 +20,7 @@ const Calendario = () => {
   const [workoutSessions, setWorkoutSessions] = useState<any[]>([]);
   const [streakCount, setStreakCount] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const monthName = months[currentMonth];
 
@@ -28,10 +29,11 @@ const Calendario = () => {
       const fetchWorkoutSessions = async () => {
         if (!userId) return;
 
+        setLoading(true);
         try {
           const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          
-          Promise.allSettled([
+
+          const results = await Promise.allSettled([
             api.get(`/workout/session/all/${userId}`, {
               headers: { "X-Silent": "true" },
             }),
@@ -39,22 +41,27 @@ const Calendario = () => {
               headers: { "X-Silent": "true" },
               params: { timezone },
             }),
-          ]).then((response) => {
-            if (response[0].status === "fulfilled") {
-              setWorkoutSessions(response[0].value.data?.data || []);
-            } else {
-              setWorkoutSessions([]);
-            }
-            if (response[1].status === "fulfilled") {
-              setStreakCount(response[1].value.data?.data?.currentStreak || 0);
-              setLongestStreak(response[1].value.data?.data?.longestStreak || 0);
-            } else {
-              setStreakCount(0);
-              setLongestStreak(0);
-            }
-          });
+          ]);
+
+          const [sessionsResult, streakResult] = results;
+
+          if (sessionsResult.status === "fulfilled") {
+            setWorkoutSessions(sessionsResult.value.data?.data || []);
+          } else {
+            setWorkoutSessions([]);
+          }
+
+          if (streakResult.status === "fulfilled") {
+            setStreakCount(streakResult.value.data?.data?.currentStreak || 0);
+            setLongestStreak(streakResult.value.data?.data?.longestStreak || 0);
+          } else {
+            setStreakCount(0);
+            setLongestStreak(0);
+          }
         } catch (error) {
           console.error("Erro ao buscar sessões de treino:", error);
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -150,12 +157,12 @@ const Calendario = () => {
                   }}
                 >
                   <TouchableOpacity
-                    className={`w-10 h-10 items-center justify-center rounded-2xl ${
+                    className={`w-8 h-8 items-center justify-center rounded-xl ${
                       isToday ? "bg-darkgreen" : "bg-darkgreen/10"
                     }`}
                   >
                     <Text
-                      className={`text-base font-rsemi ${
+                      className={`text-sm font-rsemi ${
                         isToday ? "text-white" : "text-darkgreen"
                       }`}
                     >
@@ -165,13 +172,13 @@ const Calendario = () => {
                 </Link>
               ) : (
                 <TouchableOpacity
-                  className={`w-10 h-10 items-center justify-center rounded-2xl ${
+                  className={`w-8 h-8 items-center justify-center rounded-xl ${
                     isToday ? "bg-darkgreen/20" : ""
                   }`}
                   disabled
                 >
                   <Text
-                    className={`text-base font-rregular ${
+                    className={`text-sm font-rregular ${
                       isToday ? "text-darkgreen font-rbold" : "text-secondary"
                     }`}
                   >
@@ -188,7 +195,7 @@ const Calendario = () => {
               )}
             </View>
           ) : (
-            <View className="w-10 h-10" />
+            <View className="w-8 h-8" />
           )}
         </View>
       );
@@ -215,45 +222,51 @@ const Calendario = () => {
 
       <View className="px-6 mb-6">
         <View className="bg-white rounded-3xl p-5 shadow-md">
-          <View className="flex-row justify-around">
-            <View className="items-center">
-              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
-                <FontAwesome6 name="dumbbell" size={20} color="#D5D962" />
-              </View>
-              <Text className="font-rbold text-2xl text-secondary">
-                {workoutSessions.length}
-              </Text>
-              <Text className="font-rregular text-xs text-secondary/60">
-                treinos
-              </Text>
+          {loading ? (
+            <View className="h-24 justify-center items-center">
+              <ActivityIndicator size="large" color="#D5D962" />
             </View>
-            <View className="items-center">
-              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
-                <FontAwesome6 name="fire" size={20} color="#D5D962" />
+          ) : (
+            <View className="flex-row justify-around">
+              <View className="items-center">
+                <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
+                  <FontAwesome6 name="dumbbell" size={20} color="#D5D962" />
+                </View>
+                <Text className="font-rbold text-2xl text-secondary">
+                  {workoutSessions.length}
+                </Text>
+                <Text className="font-rregular text-xs text-secondary/60">
+                  treinos
+                </Text>
               </View>
-              <Text className="font-rbold text-2xl text-secondary">
-                {streakCount}
-              </Text>
-              <Text className="font-rregular text-xs text-secondary/60">
-                em streak
-              </Text>
-            </View>
-            <View className="items-center">
-              <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
-                <MaterialCommunityIcons
-                  name="clock"
-                  size={24}
-                  color="#D5D962"
-                />
+              <View className="items-center">
+                <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
+                  <FontAwesome6 name="fire" size={20} color="#D5D962" />
+                </View>
+                <Text className="font-rbold text-2xl text-secondary">
+                  {streakCount}
+                </Text>
+                <Text className="font-rregular text-xs text-secondary/60">
+                  em streak
+                </Text>
               </View>
-              <Text className="font-rbold text-2xl text-secondary">
-                {longestStreak}
-              </Text>
-              <Text className="font-rregular text-xs text-secondary/60">
-                maior streak
-              </Text>
+              <View className="items-center">
+                <View className="bg-darkgreen/10 w-12 h-12 rounded-2xl items-center justify-center mb-2">
+                  <MaterialCommunityIcons
+                    name="clock"
+                    size={24}
+                    color="#D5D962"
+                  />
+                </View>
+                <Text className="font-rbold text-2xl text-secondary">
+                  {longestStreak}
+                </Text>
+                <Text className="font-rregular text-xs text-secondary/60">
+                  maior streak
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
         </View>
       </View>
       <View className="px-6 flex-1">
@@ -286,7 +299,13 @@ const Calendario = () => {
               </Text>
             ))}
           </View>
-          <View className="w-full flex-row flex-wrap">{renderDays()}</View>
+          {loading ? (
+            <View className="h-64 justify-center items-center">
+              <ActivityIndicator size="large" color="#D5D962" />
+            </View>
+          ) : (
+            <View className="w-full flex-row flex-wrap">{renderDays()}</View>
+          )}
         </View>
       </View>
     </SafeAreaView>
